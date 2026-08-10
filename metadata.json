@@ -1,0 +1,8 @@
+{
+  "name": "Remix Cổng Tập Huấn Google AI Studio - Trường Tiểu học, THCS \u0026 THPT FPT Bắc Giang",
+  "description": "Mini Webapp Portal cho giáo viên Trường Tiểu học, THCS \u0026 THPT FPT Bắc Giang tạo Prompt chuẩn mực Google AI Studio và học tập chuyển đổi giáo án. Trải nghiệm để trưởng thành!",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
