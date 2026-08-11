@@ -6,73 +6,135 @@ export function getGameTypeLabel(gameTypeId?: string): string {
 }
 
 export function generateCustomWebappMasterPrompt(idea: CustomWebappIdea): string {
-  const functionsList = idea.functions && idea.functions.filter(f => f.trim() !== '').length > 0
-    ? idea.functions.filter(f => f.trim() !== '').map((f, i) => `${i + 1}. ${f}`).join('\n')
-    : '1. Hiển thị thông tin chính\n2. Cho phép người dùng tương tác\n3. Hiển thị kết quả và phản hồi';
+  const productName = idea.productName && idea.productName.trim() ? idea.productName.trim() : 'Chưa đặt tên';
+  
+  const targetAudience = idea.targetAudience && idea.targetAudience.trim() ? idea.targetAudience.trim() : 'Học sinh';
+  
+  const problem = idea.problem && idea.problem.trim() ? idea.problem.trim() : 'Chưa mô tả cụ thể';
+  
+  const demandSentence = idea.demandSentence && idea.demandSentence.trim()
+    ? idea.demandSentence.trim()
+    : `Tôi cần một webapp giúp ${targetAudience} ${idea.supportTask || 'thực hành và làm bài tập'} để ${idea.desiredOutcome || 'đạt kết quả ôn tập tốt'}.`;
 
-  const uiStyles = idea.uiStyle && idea.uiStyle.length > 0 ? idea.uiStyle.join(', ') : 'Đơn giản, Hiện đại';
-  const uiCombined = idea.otherUiReqs ? `${uiStyles}. ${idea.otherUiReqs}` : uiStyles;
+  const objective = idea.objective && idea.objective.trim() ? idea.objective.trim() : demandSentence;
 
-  const constraintsList = idea.constraints && idea.constraints.length > 0
-    ? idea.constraints.map(c => `- ${c}`).join('\n')
-    : '- Hoạt động ổn định, không yêu cầu đăng nhập\n- Nội dung hoàn toàn bằng tiếng Việt\n- Sử dụng được trên máy tính và điện thoại';
+  // Build Content/Data section
+  const contentParts: string[] = [];
+  if (idea.contentData && idea.contentData.trim()) {
+    contentParts.push(idea.contentData.trim());
+  } else if (idea.mandatoryContent && idea.mandatoryContent.trim()) {
+    contentParts.push(idea.mandatoryContent.trim());
+  } else {
+    contentParts.push('Nội dung, bài tập hoặc câu hỏi do giáo viên/người dùng cung cấp.');
+  }
 
-  return `VAI TRÒ
-Bạn là chuyên gia thiết kế ứng dụng web và trải nghiệm người dùng trong giáo dục.
+  if (idea.contentOptions && idea.contentOptions.length > 0) {
+    contentParts.push('\nTùy chọn xử lý nội dung:');
+    idea.contentOptions.forEach(opt => contentParts.push(`- ${opt}`));
+  }
 
-BỐI CẢNH
-${idea.problem || 'Cần xây dựng một ứng dụng web phục vụ giảng dạy và hỗ trợ công việc thực tế.'}
+  const contentText = contentParts.join('\n');
 
-ĐỐI TƯỢNG SỬ DỤNG
-${idea.targetAudience || 'Học sinh phổ thông và Giáo viên'}
+  // Build Functions list
+  const validFunctions = idea.functions ? idea.functions.filter(f => f.trim() !== '') : [];
+  const functionsText = validFunctions.length > 0
+    ? validFunctions.map((f, i) => `${i + 1}. ${f.trim()}`).join('\n')
+    : '1. Hiển thị nội dung chính\n2. Cho phép người dùng tương tác\n3. Hiển thị kết quả và phản hồi';
 
-MỤC TIÊU CỦA ỨNG DỤNG
-Từ vấn đề đã mô tả, ứng dụng web phải giúp người dùng giải quyết triệt để khó khăn: "${idea.problem || 'Thao tác và học tập hiệu quả'}", mang lại trải nghiệm trực quan, dễ dùng và đạt hiệu quả thiết thực.
+  // Build User Flow
+  let userFlowText = '';
+  if (idea.userFlowSteps && idea.userFlowSteps.filter(s => s.trim() !== '').length > 0) {
+    userFlowText = idea.userFlowSteps.filter(s => s.trim() !== '').map(s => s.trim()).join(' → ');
+  } else if (idea.userFlow && idea.userFlow.trim()) {
+    userFlowText = idea.userFlow.trim();
+  } else {
+    userFlowText = 'Mở webapp → Chọn chủ đề → Làm bài tập → Nhận phản hồi → Xem kết quả';
+  }
 
-CHỨC NĂNG CHÍNH
-${functionsList}
+  // Expected Output
+  const expectedOutput = idea.expectedOutput && idea.expectedOutput.trim()
+    ? idea.expectedOutput.trim()
+    : 'Kết quả tương tác, điểm số hoặc phản hồi hướng dẫn cho người dùng.';
 
-LUỒNG SỬ DỤNG
-${idea.userFlow || 'Mở trang → Đọc hướng dẫn → Thực hiện nhiệm vụ → Nhận phản hồi → Xem kết quả → Chơi lại / Làm lại.'}
+  // UI styling notes
+  const uiStyles = idea.uiStyle && idea.uiStyle.length > 0 ? idea.uiStyle.join(', ') : '';
+  const uiCombined = idea.otherUiReqs ? `${uiStyles ? uiStyles + '. ' : ''}${idea.otherUiReqs}` : uiStyles;
 
-NỘI DUNG BẮT BUỘC
-${idea.mandatoryContent || 'Sử dụng các nội dung do giáo viên cung cấp.'}
+  // Constraints
+  const constraintsList: string[] = [];
+  if (idea.constraints && idea.constraints.length > 0) {
+    idea.constraints.forEach(c => constraintsList.push(`- ${c}`));
+  } else {
+    constraintsList.push('- Sử dụng tiếng Việt');
+    constraintsList.push('- Responsive trên máy tính và điện thoại');
+    constraintsList.push('- Không yêu cầu đăng nhập');
+    constraintsList.push('- Không sử dụng database');
+    constraintsList.push('- Không thu thập thông tin cá nhân');
+  }
 
-YÊU CẦU GIAO DIỆN
-- Phong cách: ${uiCombined}
-- Bố cục rõ ràng, trực quan, màu sắc phù hợp, phông chữ dễ đọc.
+  if (idea.otherConstraints && idea.otherConstraints.trim()) {
+    constraintsList.push(`- ${idea.otherConstraints.trim()}`);
+  }
 
-RÀNG BUỘC
-${constraintsList}
+  const constraintsText = constraintsList.join('\n');
 
-YÊU CẦU TRẢI NGHIỆM
-- Giao diện rõ ràng.
-- Responsive.
-- Sử dụng tốt trên máy tính và điện thoại.
-- Các nút bấm dễ nhận biết.
-- Có hướng dẫn sử dụng ngắn gọn.
-- Không để thông tin quan trọng bị che hoặc tràn màn hình.
+  return `Bạn là chuyên gia thiết kế và phát triển webapp.
 
-YÊU CẦU KỸ THUẬT
-- Tạo một webapp hoạt động được.
-- Ưu tiên giải pháp đơn giản và ổn định.
-- Không tự thêm các chức năng phức tạp không được yêu cầu.
-- Nếu không cần thiết, không sử dụng backend hoặc cơ sở dữ liệu.
-- Không thu thập thông tin cá nhân nếu người dùng không yêu cầu.
+Hãy xây dựng một webapp theo Requirements sau:
 
-YÊU CẦU KIỂM THỬ
-Sau khi tạo ứng dụng:
-1. Kiểm tra toàn bộ các nút.
-2. Kiểm tra luồng chính.
-3. Kiểm tra nội dung.
-4. Kiểm tra hiển thị trên màn hình nhỏ.
-5. Bảo đảm chức năng chính hoạt động.
+TÊN SẢN PHẨM:
+${productName}
 
-NGUYÊN TẮC QUAN TRỌNG
-Không tự ý thay đổi nội dung chuyên môn do giáo viên cung cấp.
-Nếu một yêu cầu chưa rõ, ưu tiên cách triển khai đơn giản và dễ sử dụng.
+BỐI CẢNH:
+${problem}
 
-Hãy tạo phiên bản đầu tiên của ứng dụng.`;
+NGƯỜI DÙNG:
+${targetAudience}
+
+VẤN ĐỀ:
+${problem}
+
+MỤC TIÊU:
+${objective}
+
+NỘI DUNG / DỮ LIỆU:
+${contentText}
+
+CHỨC NĂNG:
+${functionsText}
+
+LUỒNG SỬ DỤNG:
+${userFlowText}
+
+ĐẦU RA:
+${expectedOutput}
+
+YÊU CẦU GIAO DIỆN:
+- Đơn giản
+- Trực quan
+- Responsive
+- Phù hợp với đối tượng người dùng${uiCombined ? `\n- Phong cách/Chi tiết khác: ${uiCombined}` : ''}
+
+RÀNG BUỘC:
+${constraintsText}
+
+XỬ LÝ TRƯỜNG HỢP LỖI:
+- Không crash khi dữ liệu trống.
+- Thông báo rõ nếu dữ liệu không hợp lệ.
+- Không tự tạo dữ liệu ngoài nguồn cho phép.
+
+TIÊU CHÍ KIỂM THỬ:
+- Luồng chính phải hoạt động đầy đủ.
+- Các chức năng chính phải hoạt động đúng.
+- Responsive trên desktop và mobile.
+- Không làm mất dữ liệu khi người dùng thao tác.
+- Không tự ý bổ sung chức năng ngoài Requirements.
+
+Hãy ưu tiên xây dựng phiên bản hoạt động đúng chức năng trước.
+
+Không tự ý thêm chức năng ngoài Requirements.
+
+Nếu có điểm chưa rõ ảnh hưởng trực tiếp đến việc xây dựng sản phẩm, hãy hỏi lại trước khi tự đưa ra giả định.`;
 }
 
 export function generateMasterPrompt(vars: PromptVariables): string {

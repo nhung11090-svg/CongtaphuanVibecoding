@@ -71,15 +71,29 @@ export type SavedPromptType = 'preset' | 'custom_idea';
 export type SavedPromptStatus = 'Đã tạo Prompt' | 'Đang xây dựng' | 'Đang kiểm thử' | 'Đã hoàn thiện';
 
 export interface CustomWebappIdea {
-  title?: string;
-  problem: string;
-  targetAudience: string;
-  functions: string[];
-  userFlow: string;
-  mandatoryContent: string;
-  uiStyle: string[];
-  otherUiReqs: string;
-  constraints: string[];
+  // Step 1: Xác định nhu cầu
+  targetAudience: string; // Ai sẽ sử dụng webapp?
+  problem: string; // Người dùng đang gặp khó khăn gì?
+  supportTask?: string; // Webapp cần hỗ trợ việc gì?
+  desiredOutcome?: string; // Sau khi sử dụng webapp, bạn muốn người dùng đạt được điều gì?
+  demandSentence?: string; // Câu mô tả nhu cầu tổng hợp
+
+  // Step 2: Thiết kế requirements
+  productName?: string; // Tên tạm thời của webapp
+  objective?: string; // Mục tiêu chính của webapp
+  contentData?: string; // Webapp sẽ sử dụng nội dung hoặc dữ liệu gì?
+  contentOptions?: string[]; // Checkboxes: ["Chỉ sử dụng nội dung do giáo viên cung cấp", ...]
+  functions: string[]; // Chức năng chính (3-5)
+  userFlowSteps?: string[]; // Trình tự các bước luồng sử dụng
+  userFlow: string; // Chuỗi luồng sử dụng kết hợp
+  expectedOutput?: string; // Kết quả trả về cho người dùng
+  constraints: string[]; // Ràng buộc
+  otherConstraints?: string; // Ràng buộc khác
+
+  // Backward compatibility / UI options
+  uiStyle?: string[];
+  otherUiReqs?: string;
+  mandatoryContent?: string;
 }
 
 export interface SavedPrompt {

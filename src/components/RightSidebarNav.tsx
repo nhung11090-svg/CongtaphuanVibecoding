@@ -31,11 +31,11 @@ export const RightSidebarNav: React.FC<RightSidebarNavProps> = ({
       title: 'Tổng quan Portal',
       subtitle: 'Khám phá quy trình',
       badge: '',
-      badgeColor: 'bg-blue-100 text-[#0052CC]',
-      activeBorder: 'border-blue-500 ring-2 ring-blue-200',
-      activeBg: 'bg-blue-50/90 text-[#0052CC]',
+      badgeColor: 'bg-purple-100 text-purple-900',
+      activeBorder: 'border-purple-600 ring-2 ring-purple-200',
+      activeBg: 'bg-purple-50/90 text-purple-950',
       icon: Compass,
-      iconColor: 'text-blue-600',
+      iconColor: 'text-purple-600',
     },
     {
       id: 'sandbox' as ActiveTab,
@@ -43,11 +43,11 @@ export const RightSidebarNav: React.FC<RightSidebarNavProps> = ({
       title: 'Demo Webapp',
       subtitle: 'Trải nghiệm thử',
       badge: 'Bước 1',
-      badgeColor: 'bg-emerald-100 text-emerald-800',
-      activeBorder: 'border-emerald-500 ring-2 ring-emerald-200',
-      activeBg: 'bg-emerald-50/90 text-emerald-900',
+      badgeColor: 'bg-orange-100 text-orange-900 font-extrabold',
+      activeBorder: 'border-orange-500 ring-2 ring-orange-200',
+      activeBg: 'bg-orange-50/90 text-orange-950',
       icon: PlayCircle,
-      iconColor: 'text-emerald-600',
+      iconColor: 'text-orange-600',
     },
     {
       id: 'course' as ActiveTab,
@@ -55,11 +55,11 @@ export const RightSidebarNav: React.FC<RightSidebarNavProps> = ({
       title: 'Khóa học tập huấn',
       subtitle: 'Phương pháp & Quiz',
       badge: 'Bước 2',
-      badgeColor: 'bg-blue-100 text-blue-900',
-      activeBorder: 'border-[#0052CC] ring-2 ring-blue-200',
-      activeBg: 'bg-blue-50/90 text-[#0052CC]',
+      badgeColor: 'bg-indigo-100 text-indigo-900 font-extrabold',
+      activeBorder: 'border-indigo-600 ring-2 ring-indigo-200',
+      activeBg: 'bg-indigo-50/90 text-indigo-950',
       icon: BookOpen,
-      iconColor: 'text-[#0052CC]',
+      iconColor: 'text-indigo-600',
     },
     {
       id: 'builder' as ActiveTab,
@@ -67,33 +67,33 @@ export const RightSidebarNav: React.FC<RightSidebarNavProps> = ({
       title: 'Trình tạo Prompt',
       subtitle: 'Khởi tạo Master Prompt',
       badge: 'Bước 3',
-      badgeColor: 'bg-amber-100 text-amber-900 font-extrabold',
-      activeBorder: 'border-amber-500 ring-2 ring-amber-200',
-      activeBg: 'bg-amber-50/90 text-amber-950',
+      badgeColor: 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black',
+      activeBorder: 'border-orange-500 ring-2 ring-orange-200',
+      activeBg: 'bg-gradient-to-r from-orange-50/90 to-amber-50/90 text-orange-950',
       icon: Sparkles,
-      iconColor: 'text-amber-500',
+      iconColor: 'text-orange-500',
     }
   ];
 
   return (
     <aside className="w-full lg:w-80 shrink-0 space-y-4 lg:sticky lg:top-24 h-fit">
       {/* Navigation Card */}
-      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-200/90 shadow-md">
-        <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-[#0052CC] text-white flex items-center justify-center font-black text-xs">
+      <div className="bg-white rounded-3xl p-4 sm:p-5 border border-purple-100 shadow-md">
+        <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-purple-100/80">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-700 text-white flex items-center justify-center font-black text-xs shadow-sm">
               FPT
             </div>
             <div>
-              <h3 className="font-extrabold text-gray-900 text-sm leading-tight">Lộ trình tập huấn</h3>
-              <p className="text-[11px] text-gray-500 font-medium">Chọn bước để trải nghiệm</p>
+              <h3 className="font-extrabold text-slate-900 text-sm leading-snug">Lộ trình tập huấn</h3>
+              <p className="text-[11px] text-slate-500 font-medium">Chọn bước để trải nghiệm</p>
             </div>
           </div>
-          <GraduationCap className="w-5 h-5 text-amber-500" />
+          <GraduationCap className="w-5 h-5 text-orange-500" />
         </div>
 
         {/* Step List */}
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {steps.map((step) => {
             const Icon = step.icon;
             const isActive = activeTab === step.id;
@@ -102,17 +102,17 @@ export const RightSidebarNav: React.FC<RightSidebarNavProps> = ({
               <button
                 key={step.id}
                 onClick={() => setActiveTab(step.id)}
-                className={`w-full p-3 rounded-xl text-left transition-all flex items-center gap-3 border ${
+                className={`w-full p-3 rounded-2xl text-left transition-all flex items-center gap-3 border ${
                   isActive
                     ? `${step.activeBg} ${step.activeBorder} shadow-sm scale-[1.01]`
-                    : 'bg-gray-50/80 hover:bg-gray-100/80 border-gray-200/70 text-gray-700'
+                    : 'bg-slate-50/80 hover:bg-slate-100/80 border-slate-200/80 text-slate-700'
                 }`}
               >
                 {/* Step Number Circle */}
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs shrink-0 ${
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
                   isActive
-                    ? 'bg-[#0052CC] text-white shadow-xs'
-                    : 'bg-gray-200 text-gray-700'
+                    ? 'bg-gradient-to-br from-purple-600 to-indigo-700 text-white shadow-xs'
+                    : 'bg-slate-200/90 text-slate-700'
                 }`}>
                   {step.number ? step.number : <Icon className="w-4 h-4" />}
                 </div>
@@ -121,25 +121,25 @@ export const RightSidebarNav: React.FC<RightSidebarNavProps> = ({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-1">
                     <span className={`font-extrabold text-xs sm:text-sm truncate ${
-                      isActive ? 'text-gray-900' : 'text-gray-800'
+                      isActive ? 'text-slate-900' : 'text-slate-800'
                     }`}>
                       {step.title}
                     </span>
                     {step.badge && (
-                      <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shrink-0 ${step.badgeColor}`}>
+                      <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full shrink-0 ${step.badgeColor}`}>
                         {step.badge}
                       </span>
                     )}
                   </div>
                   {step.subtitle && (
-                    <p className="text-[11px] text-gray-500 truncate mt-0.5">
+                    <p className="text-[11px] text-slate-500 truncate mt-0.5 font-normal">
                       {step.subtitle}
                     </p>
                   )}
                 </div>
 
                 <ChevronRight className={`w-4 h-4 shrink-0 transition-transform ${
-                  isActive ? 'text-[#0052CC] translate-x-0.5' : 'text-gray-400'
+                  isActive ? 'text-purple-600 translate-x-0.5' : 'text-slate-400'
                 }`} />
               </button>
             );
@@ -147,20 +147,20 @@ export const RightSidebarNav: React.FC<RightSidebarNavProps> = ({
         </div>
 
         {/* Saved Prompts Quick Link */}
-        <div className="mt-3 pt-3 border-t border-gray-100">
+        <div className="mt-3.5 pt-3.5 border-t border-slate-100">
           <button
             onClick={() => setActiveTab('saved')}
-            className={`w-full p-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-all border ${
+            className={`w-full p-3 rounded-2xl text-xs font-bold flex items-center justify-between transition-all border ${
               activeTab === 'saved'
-                ? 'bg-amber-100 text-amber-950 border-amber-300 ring-2 ring-amber-200'
-                : 'bg-amber-50/60 hover:bg-amber-100/60 text-amber-900 border-amber-200/60'
+                ? 'bg-gradient-to-r from-orange-100 to-amber-100 text-orange-950 border-orange-300 ring-2 ring-orange-200'
+                : 'bg-orange-50/60 hover:bg-orange-100/80 text-orange-900 border-orange-200/80'
             }`}
           >
             <div className="flex items-center gap-2">
-              <Bookmark className="w-4 h-4 text-amber-600" />
+              <Bookmark className="w-4 h-4 text-orange-600" />
               <span>Kho prompt đã lưu</span>
             </div>
-            <span className="bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded-full font-black">
+            <span className="bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[10px] px-2.5 py-0.5 rounded-full font-black shadow-xs">
               {savedCount}
             </span>
           </button>
@@ -168,19 +168,19 @@ export const RightSidebarNav: React.FC<RightSidebarNavProps> = ({
       </div>
 
       {/* External Helper Banner */}
-      <div className="bg-gradient-to-br from-blue-900 to-[#0052CC] text-white p-4 rounded-2xl shadow-sm space-y-3">
+      <div className="bg-gradient-to-br from-indigo-950 via-purple-900 to-slate-900 text-white p-5 rounded-3xl shadow-md space-y-3 border border-purple-800/40">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-extrabold text-amber-300 uppercase tracking-wider">Môi trường thực hành</span>
-          <Sparkles className="w-4 h-4 text-amber-300" />
+          <span className="text-xs font-black text-orange-400 uppercase tracking-wider">Môi trường thực hành</span>
+          <Sparkles className="w-4 h-4 text-orange-400" />
         </div>
-        <p className="text-xs text-blue-100 leading-relaxed font-medium">
+        <p className="text-xs text-purple-100 leading-relaxed font-normal">
           Sau khi tạo Prompt ở Bước 3, dán trực tiếp vào Google AI Studio để sinh ứng dụng web.
         </p>
         <a
           href="https://aistudio.google.com/"
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full py-2 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-blue-950 font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm"
+          className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-xs transition-all flex items-center justify-center gap-1.5 shadow-md hover:shadow-lg"
         >
           <span>Mở Google AI Studio</span>
           <ExternalLink className="w-3.5 h-3.5" />

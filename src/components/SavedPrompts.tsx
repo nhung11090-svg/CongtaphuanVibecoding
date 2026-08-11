@@ -80,31 +80,31 @@ export const SavedPrompts: React.FC<SavedPromptsProps> = ({
   return (
     <div className="space-y-6">
       {/* Intro Header */}
-      <div className="bg-gradient-to-r from-[#0052CC]/10 via-[#0A66C2]/10 to-blue-50 border border-blue-200 rounded-2xl p-5 sm:p-6 shadow-sm">
+      <div className="bg-gradient-to-r from-indigo-950 via-purple-900 to-slate-900 border border-purple-800/40 rounded-3xl p-5 sm:p-6 shadow-md text-white">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="bg-[#0052CC] text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+              <span className="bg-orange-500 text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
                 Kho lưu trữ
               </span>
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+              <h2 className="text-lg sm:text-xl font-bold text-white">
                 Danh sách Master Prompt & Ý tưởng ({savedPrompts.length})
               </h2>
             </div>
-            <p className="text-sm text-gray-600 max-w-3xl">
+            <p className="text-sm text-purple-100 max-w-3xl">
               Quản lý các Master Prompt bài giảng và các bản thiết kế webapp theo ý tưởng riêng. Dễ dàng theo dõi trạng thái xây dựng và kiểm thử.
             </p>
           </div>
 
           {/* Search Box */}
           <div className="relative w-full md:w-72">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-purple-300 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Tìm kiếm theo tên, vấn đề, môn học..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-white border border-gray-300 rounded-xl text-xs focus:ring-2 focus:ring-[#0052CC] outline-none transition-all"
+              className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-white/10 text-white placeholder:text-purple-300 border border-white/20 focus:ring-2 focus:ring-orange-400 outline-none text-xs transition-all"
             />
           </div>
         </div>

@@ -127,31 +127,31 @@ export const SandboxPreview: React.FC<SandboxPreviewProps> = ({ onNextStep }) =>
   return (
     <div className="space-y-6">
       {/* Intro Banner */}
-      <div className="bg-gradient-to-r from-[#0052CC]/10 via-[#0A66C2]/10 to-blue-50 border border-blue-200 rounded-2xl p-5 sm:p-6 shadow-sm">
+      <div className="bg-gradient-to-r from-indigo-950 via-purple-900 to-slate-900 border border-purple-800/40 rounded-3xl p-5 sm:p-6 shadow-md text-white">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+              <span className="bg-orange-500 text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
                 Mô phỏng Webapp
               </span>
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+              <h2 className="text-lg sm:text-xl font-bold text-white">
                 Sandbox Xem Thử Trải Nghiệm Mini Webapp
               </h2>
             </div>
-            <p className="text-sm text-gray-600 max-w-3xl">
+            <p className="text-sm text-purple-100 max-w-3xl">
               Đây là mô hình Mini Webapp Dòng Thời Gian thực tế mà Google AI Studio sẽ tạo ra khi thầy cô nạp Master Prompt. Hãy trải nghiệm trực tiếp giao diện, tương tác và cách hiển thị điểm số.
             </p>
           </div>
 
           <button
             onClick={() => setShowCodeGuide(!showCodeGuide)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm border ${
+            className={`px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-sm border ${
               showCodeGuide
-                ? 'bg-amber-400 text-blue-950 border-amber-300'
-                : 'bg-white hover:bg-gray-50 text-gray-800 border-gray-300'
+                ? 'bg-orange-500 text-white border-orange-400'
+                : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
             }`}
           >
-            <Code className="w-4 h-4 text-[#0052CC]" />
+            <Code className="w-4 h-4 text-orange-300" />
             <span>{showCodeGuide ? 'Ẩn hướng dẫn sửa code' : 'Xem vùng giáo viên sửa code'}</span>
           </button>
         </div>
@@ -195,22 +195,22 @@ const questions = [
       )}
 
       {/* Main Sandbox Player Canvas */}
-      <div className="max-w-3xl mx-auto bg-white border-2 border-[#0052CC]/20 rounded-3xl shadow-xl overflow-hidden min-h-[480px] flex flex-col justify-between relative">
+      <div className="max-w-3xl mx-auto bg-white border-2 border-indigo-900/30 rounded-3xl shadow-xl overflow-hidden min-h-[480px] flex flex-col justify-between relative">
         {/* Top Control Bar of Mini Webapp */}
-        <div className="bg-[#0052CC] text-white px-5 py-3 flex items-center justify-between text-xs font-semibold">
+        <div className="bg-gradient-to-r from-indigo-950 via-purple-900 to-slate-900 text-white px-5 py-3 flex items-center justify-between text-xs font-semibold">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="w-2.5 h-2.5 rounded-full bg-orange-400 animate-pulse" />
             <span className="font-bold">Mini Webapp Dòng thời gian</span>
-            <span className="text-blue-200 hidden sm:inline">• Lịch sử Lớp 10</span>
+            <span className="text-purple-200 hidden sm:inline">• Lịch sử Lớp 10</span>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className="p-1 rounded hover:bg-white/10 transition-colors text-blue-100"
+              className="p-1 rounded hover:bg-white/10 transition-colors text-purple-100"
               title={soundEnabled ? 'Tắt âm thanh' : 'Bật âm thanh'}
             >
-              {soundEnabled ? <Volume2 className="w-4 h-4 text-amber-300" /> : <VolumeX className="w-4 h-4 text-gray-300" />}
+              {soundEnabled ? <Volume2 className="w-4 h-4 text-orange-300" /> : <VolumeX className="w-4 h-4 text-gray-300" />}
             </button>
             <button
               onClick={handleRestartGame}
@@ -225,18 +225,18 @@ const questions = [
         {/* Screen 1: Welcome Screen */}
         {gameState === 'welcome' && (
           <div className="p-8 sm:p-12 text-center space-y-6 flex-1 flex flex-col justify-center items-center">
-            <div className="w-16 h-16 rounded-2xl bg-blue-50 text-[#0052CC] flex items-center justify-center mx-auto shadow-inner border border-blue-100">
+            <div className="w-16 h-16 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center mx-auto shadow-inner border border-orange-100">
               <Clock className="w-8 h-8" />
             </div>
 
             <div className="space-y-2 max-w-lg">
-              <span className="bg-blue-100 text-[#0052CC] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+              <span className="bg-purple-100 text-purple-900 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
                 Lịch sử Lớp 10 • THCS & THPT FPT Bắc Giang
               </span>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                 Hành trình các cuộc cách mạng công nghiệp
               </h1>
-              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                 Khám phá bối cảnh, mốc thời gian và các phát minh vĩ đại đã làm thay đổi nền văn minh nhân loại qua 5 thử thách dòng thời gian tương tác.
               </p>
             </div>
@@ -244,7 +244,7 @@ const questions = [
             <div className="pt-2">
               <button
                 onClick={handleStartGame}
-                className="px-8 py-3.5 rounded-2xl bg-[#0052CC] hover:bg-[#0A66C2] text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center gap-2 mx-auto"
+                className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-sm shadow-lg hover:shadow-orange-500/20 transition-all transform hover:-translate-y-0.5 flex items-center gap-2 mx-auto"
               >
                 <span>Bắt đầu hành trình</span>
                 <ArrowRight className="w-4 h-4" />
@@ -257,45 +257,45 @@ const questions = [
         {gameState === 'instructions' && (
           <div className="p-8 text-center space-y-6 flex-1 flex flex-col justify-center max-w-lg mx-auto">
             <div className="space-y-1">
-              <h2 className="text-xl font-bold text-gray-900">Hướng Dẫn Trải Nghiệm</h2>
-              <p className="text-xs text-gray-500">2 - 4 bước thực hiện nhanh để hoàn thành thử thách</p>
+              <h2 className="text-xl font-bold text-slate-900">Hướng Dẫn Trải Nghiệm</h2>
+              <p className="text-xs text-slate-500">2 - 4 bước thực hiện nhanh để hoàn thành thử thách</p>
             </div>
 
             <div className="space-y-3 text-left text-xs">
-              <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 flex items-start gap-3">
-                <span className="w-6 h-6 rounded-full bg-[#0052CC] text-white font-bold flex items-center justify-center shrink-0 text-xs">
+              <div className="p-3 rounded-2xl bg-purple-50/80 border border-purple-100 flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-purple-700 text-white font-bold flex items-center justify-center shrink-0 text-xs">
                   1
                 </span>
                 <div>
-                  <strong className="text-gray-900 block font-bold">Quan sát mốc thời gian:</strong>
-                  <span className="text-gray-600">Mỗi thử thách tương ứng với một mốc sự kiện lịch sử quan trọng.</span>
+                  <strong className="text-slate-900 block font-bold">Quan sát mốc thời gian:</strong>
+                  <span className="text-slate-600">Mỗi thử thách tương ứng với một mốc sự kiện lịch sử quan trọng.</span>
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 flex items-start gap-3">
-                <span className="w-6 h-6 rounded-full bg-[#0052CC] text-white font-bold flex items-center justify-center shrink-0 text-xs">
+              <div className="p-3 rounded-2xl bg-purple-50/80 border border-purple-100 flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-purple-700 text-white font-bold flex items-center justify-center shrink-0 text-xs">
                   2
                 </span>
                 <div>
-                  <strong className="text-gray-900 block font-bold">Lựa chọn phát minh / sự kiện đúng:</strong>
-                  <span className="text-gray-600">Chọn 1 trong 4 đáp án bên dưới. Trả lời đúng liên tiếp để tăng chuỗi Streak thưởng!</span>
+                  <strong className="text-slate-900 block font-bold">Lựa chọn phát minh / sự kiện đúng:</strong>
+                  <span className="text-slate-600">Chọn 1 trong 4 đáp án bên dưới. Trả lời đúng liên tiếp để tăng chuỗi Streak thưởng!</span>
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 flex items-start gap-3">
-                <span className="w-6 h-6 rounded-full bg-[#0052CC] text-white font-bold flex items-center justify-center shrink-0 text-xs">
+              <div className="p-3 rounded-2xl bg-purple-50/80 border border-purple-100 flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-purple-700 text-white font-bold flex items-center justify-center shrink-0 text-xs">
                   3
                 </span>
                 <div>
-                  <strong className="text-gray-900 block font-bold">Đọc giải thích & Tích lũy điểm:</strong>
-                  <span className="text-gray-600">Xem phản hồi chi tiết sau mỗi câu hỏi để ghi nhớ kiến thức sâu sắc.</span>
+                  <strong className="text-slate-900 block font-bold">Đọc giải thích & Tích lũy điểm:</strong>
+                  <span className="text-slate-600">Xem phản hồi chi tiết sau mỗi câu hỏi để ghi nhớ kiến thức sâu sắc.</span>
                 </div>
               </div>
             </div>
 
             <button
               onClick={handleBeginTimeline}
-              className="w-full py-3 rounded-xl bg-[#0052CC] hover:bg-[#0A66C2] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
+              className="w-full py-3 rounded-2xl bg-indigo-900 hover:bg-slate-900 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
             >
               <span>Đã Hiểu, Sẵn Sàng Chơi</span>
               <Play className="w-3.5 h-3.5 fill-current" />

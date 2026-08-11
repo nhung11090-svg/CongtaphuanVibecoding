@@ -254,30 +254,30 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Mode Selector Bar: Custom Webapp Idea vs Game Templates */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-2.5 sm:p-3 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+      <div className="bg-white border border-purple-100 rounded-3xl p-3 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
           <button
             onClick={() => setBuilderMode('custom_idea')}
-            className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all border ${
+            className={`flex-1 sm:flex-initial px-5 py-3 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-all border ${
               builderMode === 'custom_idea'
-                ? 'bg-amber-500 text-white border-amber-500 shadow-md ring-2 ring-amber-200'
-                : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white border-orange-500 shadow-md ring-2 ring-orange-200'
+                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-purple-50 hover:text-purple-900'
             }`}
           >
-            <Sparkles className="w-4 h-4 text-amber-200" />
+            <Sparkles className="w-4 h-4 text-white" />
             <span>✨ Tạo webapp theo ý tưởng riêng</span>
-            <span className="bg-amber-700/60 text-white text-[9px] px-1.5 py-0.5 rounded uppercase font-extrabold">Nên dùng</span>
+            <span className="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full uppercase font-black">Nên dùng</span>
           </button>
 
           <button
             onClick={() => setBuilderMode('game_template')}
-            className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all border ${
+            className={`flex-1 sm:flex-initial px-5 py-3 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-all border ${
               builderMode === 'game_template'
-                ? 'bg-[#0052CC] text-white border-[#0052CC] shadow-md ring-2 ring-blue-200'
-                : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+                ? 'bg-indigo-950 text-white border-indigo-950 shadow-md ring-2 ring-purple-200'
+                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-purple-50 hover:text-purple-900'
             }`}
           >
-            <Gamepad2 className="w-4 h-4 text-blue-200" />
+            <Gamepad2 className="w-4 h-4 text-orange-400" />
             <span>🎮 Mẫu trò chơi & Bài giảng mẫu (Quiz, Flashcard...)</span>
           </button>
         </div>
@@ -294,172 +294,175 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
         /* MODE 2: PRESET GAME TEMPLATES BUILDER */
         <div className="space-y-6">
           {/* Intro Banner & Presets Bar */}
-          <div className="bg-gradient-to-r from-[#0052CC]/10 via-[#0A66C2]/10 to-blue-50 border border-blue-200 rounded-2xl p-5 sm:p-6 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900">
-                Trình tạo Prompt chuẩn mực Google AI Studio
-              </h2>
-            </div>
-            <p className="text-sm text-gray-600 max-w-3xl">
-              Hệ thống hướng dẫn giáo viên Trường FPT Bắc Giang tạo Master Prompt bài giảng nhanh chóng qua 4 bước trực quan. Dễ hiểu, không bị quá tải kiến thức!
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={handleResetForm}
-              className="px-3 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
-            >
-              <RotateCcw className="w-3.5 h-3.5 text-gray-500" />
-              Làm mới form
-            </button>
-            <button
-              onClick={onLaunchSandbox}
-              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md"
-            >
-              <Play className="w-3.5 h-3.5 fill-current" />
-              Xem Demo
-            </button>
-          </div>
-        </div>
-
-        {/* Quick Presets Bar */}
-        <div className="mt-4 pt-4 border-t border-blue-200/60">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-[#0052CC] uppercase tracking-wider flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5" />
-              Nạp mẫu bài giảng nhanh (Click chọn):
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-            {PRESET_TEMPLATES.map(preset => {
-              const isSelected = selectedPresetId === preset.id;
-              return (
-                <button
-                  key={preset.id}
-                  onClick={() => handleSelectPreset(preset)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border flex items-center gap-1.5 ${
-                    isSelected
-                      ? 'bg-[#0052CC] text-white border-[#0052CC] shadow-md ring-2 ring-blue-300'
-                      : 'bg-white hover:bg-blue-50/80 text-gray-700 border-gray-200 shadow-sm'
-                  }`}
-                >
-                  <BookOpen className={`w-3.5 h-3.5 ${isSelected ? 'text-amber-300' : 'text-blue-600'}`} />
-                  <span>{preset.title}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* 4-Step Progress Wizard Navigation */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-3 sm:p-4 shadow-sm">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {[
-            { step: 1, title: '1. Thông tin bài học', desc: 'Môn, Lớp, Tên bài' },
-            { step: 2, title: '2. Chọn loại trò chơi', desc: selectedGameOption.title },
-            { step: 3, title: '3. Nội dung & AI Gợi ý', desc: 'Mục tiêu, Từ khóa' },
-            { step: 4, title: '4. Xem & Sao chép Prompt', desc: 'Sẵn sàng dán AI Studio' },
-          ].map((item) => {
-            const isActive = activeStep === item.step;
-            const isCompleted = activeStep > item.step;
-            return (
-              <button
-                key={item.step}
-                onClick={() => setActiveStep(item.step)}
-                className={`p-3 rounded-xl border text-left transition-all relative overflow-hidden ${
-                  isActive
-                    ? 'bg-blue-50/80 border-[#0052CC] ring-2 ring-blue-200 shadow-sm'
-                    : isCompleted
-                    ? 'bg-emerald-50/50 border-emerald-200 hover:bg-emerald-50'
-                    : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                    isActive
-                      ? 'bg-[#0052CC] text-white'
-                      : isCompleted
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-gray-200 text-gray-600'
-                  }`}>
-                    Bước {item.step} / 4
+          <div className="bg-gradient-to-r from-indigo-950 via-purple-900 to-slate-900 border border-purple-800/40 rounded-3xl p-6 sm:p-8 shadow-xl text-white">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="bg-orange-500 text-white text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
+                    Tạo Master Prompt Trò Chơi
                   </span>
-                  {isCompleted && <Check className="w-4 h-4 text-emerald-600" />}
+                  <h2 className="text-xl sm:text-2xl font-black text-white">
+                    Trình tạo Prompt chuẩn mực Google AI Studio
+                  </h2>
                 </div>
-                <p className={`text-xs font-bold truncate ${isActive ? 'text-[#0052CC]' : 'text-gray-800'}`}>
-                  {item.title}
+                <p className="text-sm sm:text-base text-purple-100 max-w-3xl leading-relaxed font-normal">
+                  Hệ thống hướng dẫn giáo viên Trường FPT Bắc Giang tạo Master Prompt bài giảng nhanh chóng qua 4 bước trực quan. Dễ hiểu, không bị quá tải kiến thức!
                 </p>
-                <p className="text-[11px] text-gray-500 truncate">{item.desc}</p>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+              </div>
 
-      {/* STEP CONTENT PANELS */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm">
-        
-        {/* BƯỚC 1: THÔNG TIN BÀI HỌC */}
-        {activeStep === 1 && (
-          <div className="space-y-5 animate-fadeIn">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <div>
-                <span className="text-xs font-bold text-[#0052CC] uppercase tracking-wider">BƯỚC 1 / 4</span>
-                <h3 className="text-lg font-extrabold text-gray-900">Thông tin bài học</h3>
-                <p className="text-xs text-gray-500">Nhập thông tin cơ bản của tiết học hoặc chọn bài giảng mẫu ở phía trên.</p>
+              <div className="flex items-center gap-2.5 shrink-0">
+                <button
+                  onClick={handleResetForm}
+                  className="px-4 py-2.5 rounded-2xl border border-white/20 bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all shadow-sm"
+                >
+                  <RotateCcw className="w-4 h-4 text-purple-200" />
+                  <span>Làm mới form</span>
+                </button>
+                <button
+                  onClick={onLaunchSandbox}
+                  className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all shadow-md"
+                >
+                  <Play className="w-4 h-4 fill-current" />
+                  <span>Xem Demo Sandbox</span>
+                </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            {/* Quick Presets Bar */}
+            <div className="mt-5 pt-5 border-t border-purple-800/50">
+              <div className="flex items-center justify-between mb-2.5">
+                <span className="text-xs sm:text-sm font-extrabold text-orange-300 uppercase tracking-wider flex items-center gap-2">
+                  <Layers className="w-4 h-4" />
+                  Nạp mẫu bài giảng nhanh (Click chọn):
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2.5 overflow-x-auto pb-1 no-scrollbar">
+                {PRESET_TEMPLATES.map(preset => {
+                  const isSelected = selectedPresetId === preset.id;
+                  return (
+                    <button
+                      key={preset.id}
+                      onClick={() => handleSelectPreset(preset)}
+                      className={`px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all border flex items-center gap-2 ${
+                        isSelected
+                          ? 'bg-orange-500 text-white border-orange-400 shadow-md ring-2 ring-orange-300'
+                          : 'bg-white/10 hover:bg-white/20 text-white border-white/20 shadow-sm'
+                      }`}
+                    >
+                      <BookOpen className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-orange-300'}`} />
+                      <span>{preset.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* 4-Step Progress Wizard Navigation */}
+          <div className="bg-white border border-purple-100 rounded-3xl p-4 sm:p-5 shadow-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { step: 1, title: '1. Thông tin bài học', desc: 'Môn, Lớp, Tên bài' },
+                { step: 2, title: '2. Chọn loại trò chơi', desc: selectedGameOption.title },
+                { step: 3, title: '3. Nội dung & AI Gợi ý', desc: 'Mục tiêu, Từ khóa' },
+                { step: 4, title: '4. Xem & Sao chép Prompt', desc: 'Sẵn sàng dán AI Studio' },
+              ].map((item) => {
+                const isActive = activeStep === item.step;
+                const isCompleted = activeStep > item.step;
+                return (
+                  <button
+                    key={item.step}
+                    onClick={() => setActiveStep(item.step)}
+                    className={`p-3.5 sm:p-4 rounded-2xl border text-left transition-all relative overflow-hidden ${
+                      isActive
+                        ? 'bg-purple-50/90 border-purple-600 ring-2 ring-purple-200 shadow-sm'
+                        : isCompleted
+                        ? 'bg-emerald-50/60 border-emerald-200 hover:bg-emerald-50'
+                        : 'bg-slate-50 border-slate-200 hover:bg-purple-50/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className={`text-[10px] sm:text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
+                        isActive
+                          ? 'bg-purple-800 text-white'
+                          : isCompleted
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-slate-200 text-slate-700'
+                      }`}>
+                        Bước {item.step} / 4
+                      </span>
+                      {isCompleted && <Check className="w-4 h-4 text-emerald-600 font-bold" />}
+                    </div>
+                    <p className={`text-xs sm:text-sm font-black truncate ${isActive ? 'text-purple-950' : 'text-slate-800'}`}>
+                      {item.title}
+                    </p>
+                    <p className="text-xs text-slate-500 font-medium truncate mt-0.5">{item.desc}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+      {/* Steps Content Area */}
+      <div className="bg-white border border-purple-100 rounded-3xl p-6 sm:p-8 shadow-sm">
+        
+        {/* BƯỚC 1: THÔNG TIN BÀI HỌC */}
+        {activeStep === 1 && (
+          <div className="space-y-6 animate-fadeIn">
+            <div className="flex items-center justify-between pb-4 border-b border-purple-100">
               <div>
-                <label className="block font-semibold text-gray-700 mb-1">
-                  Môn học <span className="text-red-500">*</span>
+                <span className="text-xs font-black text-orange-600 uppercase tracking-widest">BƯỚC 1 / 4</span>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">Thông tin bài học</h3>
+                <p className="text-xs sm:text-sm text-slate-500 font-medium">Nhập thông tin cơ bản của tiết học hoặc chọn bài giảng mẫu ở phía trên.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
+              <div>
+                <label className="block font-bold text-slate-800 mb-1.5 text-xs sm:text-sm">
+                  Môn học <span className="text-orange-600 font-bold">*</span>
                 </label>
                 <input
                   type="text"
                   placeholder="Nhập tên môn học (Ví dụ: Lịch sử, Toán, Tiếng Anh...)"
                   value={variables.subject}
                   onChange={e => handleInputChange('subject', e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0052CC] focus:border-transparent outline-none transition-all font-medium text-gray-800 text-sm"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-purple-400 focus:border-purple-600 outline-none transition-all font-semibold text-slate-900 text-sm bg-purple-50/20"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-gray-700 mb-1">
-                  Khối lớp <span className="text-red-500">*</span>
+                <label className="block font-bold text-slate-800 mb-1.5 text-xs sm:text-sm">
+                  Khối lớp <span className="text-orange-600 font-bold">*</span>
                 </label>
                 <input
                   type="text"
                   placeholder="Nhập khối lớp / đối tượng (Ví dụ: Lớp 10, Lớp 6, Khối THCS...)"
                   value={variables.grade}
                   onChange={e => handleInputChange('grade', e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0052CC] focus:border-transparent outline-none transition-all font-medium text-gray-800 text-sm"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-purple-400 focus:border-purple-600 outline-none transition-all font-semibold text-slate-900 text-sm bg-purple-50/20"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="block font-semibold text-gray-700 mb-1">
-                  Tên bài học / Chủ đề <span className="text-red-500">*</span>
+                <label className="block font-bold text-slate-800 mb-1.5 text-xs sm:text-sm">
+                  Tên bài học / Chủ đề <span className="text-orange-600 font-bold">*</span>
                 </label>
                 <input
                   type="text"
                   placeholder="Nhập tên bài học / Chủ đề (Ví dụ: Cách mạng công nghiệp thời hiện đại...)"
                   value={variables.lesson_name}
                   onChange={e => handleInputChange('lesson_name', e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0052CC] focus:border-transparent outline-none transition-all font-medium text-gray-800 text-sm"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-purple-400 focus:border-purple-600 outline-none transition-all font-semibold text-slate-900 text-sm sm:text-base bg-purple-50/20"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end pt-3">
+            <div className="flex justify-end pt-4 border-t border-purple-100">
               <button
                 onClick={() => setActiveStep(2)}
-                className="px-5 py-2.5 rounded-xl bg-[#0052CC] hover:bg-[#0A66C2] text-white font-bold text-xs flex items-center gap-2 shadow-md transition-all"
+                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-md hover:shadow-orange-500/20 transition-all"
               >
                 <span>Sang bước 2: Chọn loại trò chơi</span>
                 <ChevronRight className="w-4 h-4" />
@@ -470,39 +473,39 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
 
         {/* BƯỚC 2: CHỌN HÌNH THỨC TRÒ CHƠI (GAME TYPE SELECTION GRID) */}
         {activeStep === 2 && (
-          <div className="space-y-5 animate-fadeIn">
-            <div className="pb-3 border-b border-gray-100">
-              <span className="text-xs font-bold text-[#0052CC] uppercase tracking-wider">BƯỚC 2 / 4</span>
-              <h3 className="text-xl font-extrabold text-gray-900 tracking-tight">Chọn cách học sinh sẽ chơi</h3>
-              <p className="text-xs text-gray-500">Hãy chọn hình thức trò chơi theo mục tiêu của bài học để AI thiết kế trải nghiệm tương ứng.</p>
+          <div className="space-y-6 animate-fadeIn">
+            <div className="pb-4 border-b border-purple-100">
+              <span className="text-xs font-black text-orange-600 uppercase tracking-widest">BƯỚC 2 / 4</span>
+              <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-1">Chọn cách học sinh sẽ chơi</h3>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium">Hãy chọn hình thức trò chơi theo mục tiêu của bài học để AI thiết kế trải nghiệm tương ứng.</p>
             </div>
 
             {/* AI Recommendation Banner based on Step 1 */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-50 to-blue-50 border border-amber-300 shadow-sm flex items-start gap-3.5">
-              <div className="p-2.5 bg-amber-500 text-white rounded-xl shrink-0 mt-0.5 shadow-sm">
-                <Sparkles className="w-5 h-5 text-amber-100" />
+            <div className="p-5 rounded-3xl bg-gradient-to-r from-purple-950 via-indigo-900 to-slate-900 text-white border border-purple-800/50 shadow-md flex items-start gap-4">
+              <div className="p-3 bg-gradient-to-br from-orange-500 to-amber-500 text-white rounded-2xl shrink-0 mt-0.5 shadow-md">
+                <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="text-xs font-extrabold text-amber-900 uppercase tracking-wider">
+                  <h4 className="text-xs sm:text-sm font-black text-orange-400 uppercase tracking-wider">
                     💡 AI Gợi ý loại trò chơi cho bài học
                   </h4>
                   {variables.subject && (
-                    <span className="bg-amber-200 text-amber-900 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                    <span className="bg-orange-500/30 text-orange-300 border border-orange-500/40 text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full font-bold">
                       {variables.subject} {variables.grade && `• ${variables.grade}`}
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-gray-800 font-medium mt-1 leading-relaxed">
-                  Dựa vào nội dung đã nhập ở Bước 1: <strong className="text-[#0052CC]">{aiRecommendation.title}</strong> — {aiRecommendation.reason}
+                <p className="text-xs sm:text-sm text-purple-100 font-medium mt-1.5 leading-relaxed">
+                  Dựa vào nội dung đã nhập ở Bước 1: <strong className="text-orange-300 font-bold">{aiRecommendation.title}</strong> — {aiRecommendation.reason}
                 </p>
-                <div className="mt-2">
+                <div className="mt-3">
                   <button
                     type="button"
                     onClick={() => handleSelectGameType(aiRecommendation.id)}
-                    className="px-3 py-1 rounded-lg bg-[#0052CC] hover:bg-[#0A66C2] text-white text-[11px] font-extrabold transition-all shadow-sm flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs sm:text-sm font-black transition-all shadow-md flex items-center gap-2"
                   >
-                    <Check className="w-3.5 h-3.5" />
+                    <Check className="w-4 h-4" />
                     <span>Áp dụng loại game AI gợi ý này</span>
                   </button>
                 </div>
@@ -510,7 +513,7 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
             </div>
 
             {/* 10 Game Type Grid Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
               {GAME_TYPES.map(game => {
                 const isSelected = (variables.game_type || 'timeline') === game.id;
                 return (
@@ -518,33 +521,33 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
                     key={game.id}
                     type="button"
                     onClick={() => handleSelectGameType(game.id)}
-                    className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3 relative ${
+                    className={`p-4 sm:p-5 rounded-3xl border text-left transition-all flex items-start gap-3.5 relative ${
                       isSelected
-                        ? 'bg-blue-50/60 border-[#0052CC] ring-2 ring-[#0052CC]/30 shadow-md'
-                        : 'bg-white hover:bg-gray-50 border-gray-200 shadow-sm hover:border-gray-300'
+                        ? 'bg-purple-50/90 border-purple-600 ring-2 ring-purple-300 shadow-md'
+                        : 'bg-white hover:bg-purple-50/40 border-slate-200 shadow-xs'
                     }`}
                   >
-                    <div className={`p-2.5 rounded-xl shrink-0 ${
-                      isSelected ? 'bg-[#0052CC] text-white' : 'bg-gray-100 text-gray-700'
+                    <div className={`p-3 rounded-2xl shrink-0 ${
+                      isSelected ? 'bg-gradient-to-br from-orange-500 to-amber-500 text-white' : 'bg-purple-100 text-purple-900'
                     }`}>
-                      {renderGameIcon(game.iconName, 'w-5 h-5')}
+                      {renderGameIcon(game.iconName, 'w-5 h-5 sm:w-6 sm:h-6')}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-1">
-                        <h4 className="text-sm font-bold text-gray-900 truncate">{game.title}</h4>
+                      <div className="flex items-center justify-between gap-1.5">
+                        <h4 className="text-sm sm:text-base font-extrabold text-slate-900 truncate">{game.title}</h4>
                         {game.badge && (
-                          <span className="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0">
+                          <span className="bg-orange-100 text-orange-950 text-[10px] px-2 py-0.5 rounded-full font-black shrink-0">
                             {game.badge}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-500 truncate mt-0.5">{game.subtitle}</p>
+                      <p className="text-xs text-slate-500 truncate mt-1">{game.subtitle}</p>
                     </div>
 
                     {isSelected && (
-                      <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#0052CC] text-white flex items-center justify-center">
-                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-purple-800 text-white flex items-center justify-center">
+                        <Check className="w-4 h-4 stroke-[3]" />
                       </div>
                     )}
                   </button>
@@ -552,10 +555,10 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
               })}
             </div>
 
-            <div className="flex items-center justify-between pt-3">
+            <div className="flex items-center justify-between pt-4 border-t border-purple-100">
               <button
                 onClick={() => setActiveStep(1)}
-                className="px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold text-xs flex items-center gap-1.5 transition-all"
+                className="px-5 py-2.5 rounded-2xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-extrabold text-xs sm:text-sm flex items-center gap-1.5 transition-all"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Quay lại bước 1</span>
@@ -563,7 +566,7 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
 
               <button
                 onClick={() => setActiveStep(3)}
-                className="px-5 py-2.5 rounded-xl bg-[#0052CC] hover:bg-[#0A66C2] text-white font-bold text-xs flex items-center gap-2 shadow-md transition-all"
+                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-md hover:shadow-orange-500/20 transition-all"
               >
                 <span>Sang bước 3: Cấu hình nội dung</span>
                 <ChevronRight className="w-4 h-4" />
@@ -574,75 +577,75 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
 
         {/* BƯỚC 3: CẤU HÌNH BÀI HỌC & AI GỢI Ý */}
         {activeStep === 3 && (
-          <div className="space-y-5 animate-fadeIn">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+          <div className="space-y-6 animate-fadeIn">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-purple-100">
               <div>
-                <span className="text-xs font-bold text-[#0052CC] uppercase tracking-wider">BƯỚC 3 / 4</span>
-                <h3 className="text-lg font-extrabold text-gray-900">Cấu hình nội dung bài học</h3>
-                <p className="text-xs text-gray-500">Mục tiêu, nội dung chính và số lượng thử thách.</p>
+                <span className="text-xs font-black text-orange-600 uppercase tracking-widest">BƯỚC 3 / 4</span>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">Cấu hình nội dung bài học</h3>
+                <p className="text-xs sm:text-sm text-slate-500 font-medium">Mục tiêu, nội dung chính và số lượng thử thách.</p>
               </div>
 
               <button
                 onClick={handleAiSuggest}
                 disabled={isAiLoading}
-                className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm disabled:opacity-50 self-start sm:self-auto"
+                className="px-4 py-2.5 rounded-2xl bg-purple-50 hover:bg-purple-100 text-purple-950 border border-purple-200 text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all shadow-sm disabled:opacity-50 self-start sm:self-auto"
               >
-                <Wand2 className={`w-4 h-4 text-amber-600 ${isAiLoading ? 'animate-spin' : ''}`} />
+                <Wand2 className={`w-4 h-4 text-orange-500 ${isAiLoading ? 'animate-spin' : ''}`} />
                 <span>{isAiLoading ? 'AI đang viết...' : 'Trợ lý AI điền tự động'}</span>
               </button>
             </div>
 
             {aiError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2">
-                <Info className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                <span>{aiError}</span>
+              <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs sm:text-sm text-rose-800 flex items-start gap-2.5">
+                <Info className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                <span className="font-medium">{aiError}</span>
               </div>
             )}
 
-            <div className="space-y-4 text-xs">
+            <div className="space-y-5 text-sm">
               <div>
-                <label className="block font-semibold text-gray-700 mb-1">
-                  Mục tiêu bài học <span className="text-red-500">*</span>
+                <label className="block font-bold text-slate-800 mb-1.5 text-xs sm:text-sm">
+                  Mục tiêu bài học <span className="text-orange-600 font-bold">*</span>
                 </label>
                 <textarea
                   rows={2}
                   placeholder="Hãy nhập mục tiêu bài học (Ví dụ: Học sinh nắm vững các khái niệm và mốc sự kiện trọng tâm...)"
                   value={variables.objective}
                   onChange={e => handleInputChange('objective', e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0052CC] outline-none transition-all font-medium text-gray-800 text-sm"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-purple-400 focus:border-purple-600 outline-none transition-all font-medium text-slate-900 text-sm sm:text-base bg-purple-50/20"
                 />
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block font-semibold text-gray-700">
-                    Nội dung cốt lõi <span className="text-red-500">*</span>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block font-bold text-slate-800 text-xs sm:text-sm">
+                    Nội dung cốt lõi <span className="text-orange-600 font-bold">*</span>
                   </label>
-                  <span className="text-[10px] text-[#0052CC] font-bold">Nên liệt kê dạng mốc 1, 2, 3...</span>
+                  <span className="text-xs text-purple-700 font-extrabold">Nên liệt kê dạng mốc 1, 2, 3...</span>
                 </div>
                 <textarea
                   rows={4}
                   placeholder="Hãy nhập nội dung kiến thức cốt lõi hoặc danh sách mốc kiến thức (Ví dụ: 1. Khái niệm... 2. Diễn biến...)"
                   value={variables.core_content}
                   onChange={e => handleInputChange('core_content', e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0052CC] outline-none transition-all font-medium text-gray-800 text-sm"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-purple-400 focus:border-purple-600 outline-none transition-all font-medium text-slate-900 text-sm sm:text-base bg-purple-50/20"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-gray-700 mb-1">Từ khóa chính</label>
+                <label className="block font-bold text-slate-800 mb-1.5 text-xs sm:text-sm">Từ khóa chính</label>
                 <input
                   type="text"
                   placeholder="Hãy nhập các từ khóa chính (Ví dụ: Lịch sử, FPT School, Trắc nghiệm...)"
                   value={variables.keywords}
                   onChange={e => handleInputChange('keywords', e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0052CC] outline-none transition-all font-medium text-gray-800 text-sm"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-purple-400 focus:border-purple-600 outline-none transition-all font-medium text-slate-900 text-sm sm:text-base bg-purple-50/20"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block font-semibold text-gray-700 mb-1">
+                  <label className="block font-bold text-slate-800 mb-1.5 text-xs sm:text-sm">
                     Số câu hỏi / thử thách (Tùy chọn nhập)
                   </label>
                   <input
@@ -650,19 +653,19 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
                     placeholder="Hãy nhập số câu hỏi (Ví dụ: 5, 8, 10, 15...)"
                     value={variables.question_count}
                     onChange={e => handleInputChange('question_count', e.target.value)}
-                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0052CC] outline-none transition-all font-medium text-gray-800 text-sm"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-purple-400 focus:border-purple-600 outline-none transition-all font-semibold text-slate-900 text-sm sm:text-base bg-purple-50/20"
                   />
-                  <div className="flex items-center gap-1.5 mt-1.5 overflow-x-auto">
-                    <span className="text-[10px] text-gray-500 font-bold shrink-0">Gợi ý:</span>
+                  <div className="flex items-center gap-2 mt-2 overflow-x-auto">
+                    <span className="text-xs text-slate-500 font-bold shrink-0">Gợi ý:</span>
                     {['5', '8', '10', '12', '15'].map((num) => (
                       <button
                         key={num}
                         type="button"
                         onClick={() => handleInputChange('question_count', num)}
-                        className={`px-2 py-0.5 text-[11px] font-bold rounded-md border transition-all ${
+                        className={`px-3 py-1 text-xs font-black rounded-xl border transition-all ${
                           variables.question_count === num
-                            ? 'bg-[#0052CC] text-white border-[#0052CC]'
-                            : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border-gray-200'
+                            ? 'bg-purple-800 text-white border-purple-800'
+                            : 'bg-slate-50 hover:bg-purple-50 text-slate-700 border-slate-200'
                         }`}
                       >
                         {num} câu
@@ -672,22 +675,22 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Thời lượng tiết học</label>
+                  <label className="block font-bold text-slate-800 mb-1.5 text-xs sm:text-sm">Thời lượng tiết học</label>
                   <input
                     type="text"
                     placeholder="Hãy nhập thời lượng tiết học (Ví dụ: 15 phút, 1 tiết...)"
                     value={variables.duration}
                     onChange={e => handleInputChange('duration', e.target.value)}
-                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0052CC] outline-none transition-all font-medium text-gray-800 text-sm"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-purple-400 focus:border-purple-600 outline-none transition-all font-semibold text-slate-900 text-sm sm:text-base bg-purple-50/20"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-3">
+            <div className="flex items-center justify-between pt-4 border-t border-purple-100">
               <button
                 onClick={() => setActiveStep(2)}
-                className="px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold text-xs flex items-center gap-1.5 transition-all"
+                className="px-5 py-2.5 rounded-2xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-extrabold text-xs sm:text-sm flex items-center gap-1.5 transition-all"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Quay lại bước 2</span>
@@ -695,7 +698,7 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
 
               <button
                 onClick={() => setActiveStep(4)}
-                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-2 shadow-md transition-all"
+                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-md hover:shadow-orange-500/20 transition-all"
               >
                 <span>Xem kết quả Master Prompt</span>
                 <ChevronRight className="w-4 h-4" />
@@ -704,31 +707,31 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
           </div>
         )}
 
-        {/* BƯỚC 4: XEM & SAO CHÉP MASTER PROMPT (SIMPLIFIED & NON-OVERWHELMING VIEW) */}
+        {/* BƯỚC 4: XEM & SAO CHÉP MASTER PROMPT */}
         {activeStep === 4 && (
           <div className="space-y-6 animate-fadeIn">
             {/* Header + Action Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-purple-100">
               <div>
-                <span className="text-xs font-bold text-[#0052CC] uppercase tracking-wider">BƯỚC 4 / 4</span>
-                <h3 className="text-xl font-extrabold text-gray-900 tracking-tight">Master Prompt đã sẵn sàng!</h3>
-                <p className="text-xs text-gray-500">Đã tích hợp đầy đủ thông số bài giảng & định dạng trò chơi cho Google AI Studio.</p>
+                <span className="text-xs font-black text-orange-600 uppercase tracking-widest">BƯỚC 4 / 4</span>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">Master Prompt đã sẵn sàng!</h3>
+                <p className="text-xs sm:text-sm text-slate-500 font-medium">Đã tích hợp đầy đủ thông số bài giảng & định dạng trò chơi cho Google AI Studio.</p>
               </div>
 
               {/* Main Copy Button */}
-              <div className="flex items-center gap-2 flex-wrap shrink-0">
+              <div className="flex items-center gap-3 flex-wrap shrink-0">
                 <button
                   onClick={handleSave}
-                  className="px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
+                  className="px-4 py-3 rounded-2xl border border-slate-300 bg-white hover:bg-purple-50 text-slate-800 text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all shadow-sm"
                 >
                   {savedSuccess ? (
                     <>
                       <Check className="w-4 h-4 text-emerald-600" />
-                      <span className="text-emerald-700 font-bold">Đã lưu!</span>
+                      <span className="text-emerald-700 font-black">Đã lưu!</span>
                     </>
                   ) : (
                     <>
-                      <BookmarkPlus className="w-4 h-4 text-[#0052CC]" />
+                      <BookmarkPlus className="w-4 h-4 text-purple-700" />
                       <span>Lưu mẫu bài giảng</span>
                     </>
                   )}
@@ -736,20 +739,20 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
 
                 <button
                   onClick={handleCopy}
-                  className={`px-5 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all shadow-lg ring-2 ring-blue-300 ${
+                  className={`px-6 py-3 rounded-2xl text-xs sm:text-sm font-black flex items-center gap-2 transition-all shadow-lg ring-2 ring-orange-200 ${
                     copied
                       ? 'bg-emerald-600 text-white'
-                      : 'bg-[#0052CC] hover:bg-[#0A66C2] text-white'
+                      : 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white'
                   }`}
                 >
                   {copied ? (
                     <>
-                      <Check className="w-4 h-4 text-white" />
+                      <Check className="w-5 h-5 text-white" />
                       <span>ĐÃ SAO CHÉP MASTER PROMPT!</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-4 h-4 text-amber-300" />
+                      <Copy className="w-5 h-5 text-white" />
                       <span>SAO CHÉP MASTER PROMPT</span>
                     </>
                   )}
@@ -758,30 +761,30 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({
             </div>
 
             {/* View Mode Switcher (Summary Card View vs Raw Prompt Code View) */}
-            <div className="flex items-center justify-between bg-gray-100 p-1.5 rounded-xl text-xs">
-              <span className="text-gray-600 font-semibold px-2 hidden sm:inline">Chế độ hiển thị:</span>
-              <div className="flex items-center gap-1 w-full sm:w-auto justify-end">
+            <div className="flex items-center justify-between bg-purple-50/80 border border-purple-100 p-2 rounded-2xl text-xs sm:text-sm">
+              <span className="text-purple-950 font-extrabold px-3 hidden sm:inline">Chế độ hiển thị Master Prompt:</span>
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                 <button
                   onClick={() => setViewMode('summary')}
-                  className={`px-3.5 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all text-xs ${
+                  className={`px-4 py-2 rounded-xl font-extrabold flex items-center gap-2 transition-all text-xs sm:text-sm ${
                     viewMode === 'summary'
-                      ? 'bg-white text-[#0052CC] shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-purple-800 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                   }`}
                 >
-                  <Eye className="w-3.5 h-3.5 text-amber-500" />
+                  <Eye className="w-4 h-4 text-orange-400" />
                   <span>Tóm tắt dễ hiểu (khuyên dùng)</span>
                 </button>
 
                 <button
                   onClick={() => setViewMode('raw')}
-                  className={`px-3.5 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all text-xs ${
+                  className={`px-4 py-2 rounded-xl font-extrabold flex items-center gap-2 transition-all text-xs sm:text-sm ${
                     viewMode === 'raw'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-slate-900 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                   }`}
                 >
-                  <Code className="w-3.5 h-3.5 text-blue-600" />
+                  <Code className="w-4 h-4 text-orange-400" />
                   <span>Xem mã Master Prompt chi tiết</span>
                 </button>
               </div>

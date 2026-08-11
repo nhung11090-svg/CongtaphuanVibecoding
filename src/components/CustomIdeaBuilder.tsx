@@ -1,13 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CustomWebappIdea, SavedPrompt } from '../types';
 import { generateCustomWebappMasterPrompt } from '../data/masterPrompt';
 import { 
   Sparkles, 
-  Wand2, 
   Copy, 
   Check, 
-  BookmarkPlus, 
-  ExternalLink, 
   RotateCcw, 
   ChevronRight, 
   ChevronLeft, 
@@ -16,17 +13,18 @@ import {
   AlertTriangle, 
   CheckCircle2, 
   Info, 
-  Code, 
-  Eye, 
-  ArrowRight,
-  Lightbulb,
-  ShieldCheck,
+  Lightbulb, 
+  ShieldCheck, 
+  Target, 
+  FileText, 
   Layers,
-  Target,
-  FileText,
-  SlidersHorizontal,
-  LayoutGrid,
-  ListOrdered
+  HelpCircle,
+  Edit3,
+  BookOpen,
+  ArrowRight,
+  Paperclip,
+  Upload,
+  X
 } from 'lucide-react';
 
 interface CustomIdeaBuilderProps {
@@ -35,251 +33,122 @@ interface CustomIdeaBuilderProps {
   onSwitchToGameMode: () => void;
 }
 
+const DEFAULT_CONSTRAINTS = [
+  'Sử dụng tiếng Việt',
+  'Responsive trên máy tính và điện thoại',
+  'Không yêu cầu đăng nhập',
+  'Không sử dụng database',
+  'Không thu thập thông tin cá nhân',
+  'Không tự ý bổ sung chức năng ngoài yêu cầu',
+  'Nội dung phù hợp đối tượng học sinh'
+];
+
+const EXAMPLE_DATA: CustomWebappIdea = {
+  productName: 'Ôn tập Tin học 8',
+  targetAudience: 'Học sinh lớp 8',
+  problem: 'Học sinh cần ôn lại kiến thức trước kỳ kiểm tra nhưng việc ôn tập bằng tài liệu tĩnh ít tương tác và chưa có phản hồi ngay.',
+  supportTask: 'Giúp học sinh luyện các câu hỏi ôn tập và nhận phản hồi sau mỗi câu.',
+  desiredOutcome: 'Học sinh biết câu nào đúng, câu nào sai và nội dung nào cần ôn lại.',
+  demandSentence: 'Tôi cần một webapp giúp học sinh lớp 8 ôn tập kiến thức học kỳ thông qua các câu hỏi tương tác để các em biết ngay kết quả và xác định nội dung cần ôn lại.',
+  objective: 'Giúp học sinh chủ động ôn tập học kỳ.',
+  contentData: 'Câu hỏi ôn tập do giáo viên cung cấp',
+  contentOptions: ['Chỉ sử dụng nội dung do giáo viên cung cấp'],
+  functions: [
+    'Chọn chủ đề ôn tập',
+    'Làm câu hỏi trắc nghiệm',
+    'Phản hồi đúng/sai',
+    'Hiển thị giải thích',
+    'Tổng kết và ôn lại câu sai'
+  ],
+  userFlowSteps: ['Mở app', 'Chọn chủ đề', 'Làm câu hỏi', 'Nhận phản hồi', 'Xem kết quả', 'Ôn lại'],
+  userFlow: 'Mở app → Chọn chủ đề → Làm câu hỏi → Nhận phản hồi → Xem kết quả → Ôn lại',
+  expectedOutput: 'Kết quả từng câu, giải thích, số câu đúng, số câu sai, nội dung cần ôn lại',
+  constraints: [
+    'Sử dụng tiếng Việt',
+    'Responsive trên máy tính và điện thoại',
+    'Không yêu cầu đăng nhập',
+    'Không sử dụng database',
+    'Không thu thập thông tin cá nhân',
+    'Chỉ sử dụng nội dung do giáo viên cung cấp'
+  ],
+  otherConstraints: ''
+};
+
 export const CustomIdeaBuilder: React.FC<CustomIdeaBuilderProps> = ({
   onSavePrompt,
   onCopyPromptText,
   onSwitchToGameMode,
 }) => {
-  // 7-question form state
-  const [idea, setIdea] = useState<CustomWebappIdea>({
-    problem: '',
-    targetAudience: '',
-    functions: ['', '', ''],
-    userFlow: '',
-    mandatoryContent: '',
-    uiStyle: ['Đơn giản', 'Hiện đại'],
-    otherUiReqs: '',
-    constraints: [
-      'Hoạt động trong khoảng 5 phút',
-      'Không yêu cầu đăng nhập',
-      'Không thu thập dữ liệu cá nhân',
-      'Sử dụng được trên điện thoại',
-      'Không cần cơ sở dữ liệu',
-      'Nội dung hoàn toàn bằng tiếng Việt'
-    ]
-  });
-
-  // Active step in custom wizard:
-  // 1: Nhập 7 câu hỏi
-  // 2: Xem lại bản thiết kế (Review)
-  // 3: Master Prompt kết quả & Hướng dẫn AI Studio
+  // 4-step wizard state
   const [activeStep, setActiveStep] = useState<number>(1);
 
-  // Layout mode for Question form:
-  // 'full' = Hiển thị toàn cảnh 3 Mô-đun khoa học (khuyên dùng)
-  // 'stepper' = Hiển thị lần lượt từng câu hỏi
-  const [formLayoutMode, setFormLayoutMode] = useState<'full' | 'stepper'>('full');
+  // Form State
+  const [idea, setIdea] = useState<CustomWebappIdea>({
+    targetAudience: '',
+    problem: '',
+    supportTask: '',
+    desiredOutcome: '',
+    demandSentence: '',
+    productName: '',
+    objective: '',
+    contentData: '',
+    contentOptions: ['Chỉ sử dụng nội dung do giáo viên cung cấp'],
+    functions: ['Chọn chủ đề ôn tập', 'Làm câu hỏi trắc nghiệm', 'Hiển thị kết quả và phản hồi'],
+    userFlowSteps: ['Mở webapp', 'Chọn chủ đề', 'Làm câu hỏi', 'Nhận phản hồi', 'Xem kết quả'],
+    userFlow: '',
+    expectedOutput: '',
+    constraints: [...DEFAULT_CONSTRAINTS],
+    otherConstraints: ''
+  });
 
-  // Active question index if in stepper mode (1 to 7)
-  const [currentQuestion, setCurrentQuestion] = useState<number>(1);
+  // Edit demand sentence toggle
+  const [isEditingDemand, setIsEditingDemand] = useState<boolean>(false);
 
-  // AI Suggestion states
-  const [loadingAiQuestion, setLoadingAiQuestion] = useState<number | null>(null);
-  const [aiNote, setAiNote] = useState<string | null>(null);
+  // File attachments state
+  const [attachedFiles, setAttachedFiles] = useState<{ name: string; size: number; content?: string }[]>([]);
+
+  // UI status states
   const [validationError, setValidationError] = useState<string | null>(null);
-
-  // Result view state
   const [copied, setCopied] = useState<boolean>(false);
-  const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
-  const [viewMode, setViewMode] = useState<'summary' | 'raw'>('summary');
+  const [showCopyNotice, setShowCopyNotice] = useState<boolean>(false);
 
-  // Master Prompt text
-  const masterPromptText = generateCustomWebappMasterPrompt(idea);
+  // Auto-generate demand sentence if not manually edited
+  useEffect(() => {
+    if (!isEditingDemand) {
+      const user = idea.targetAudience.trim() || '[NGƯỜI DÙNG]';
+      const task = idea.supportTask.trim() || '[VIỆC CẦN HỖ TRỢ]';
+      const outcome = idea.desiredOutcome.trim() || '[KẾT QUẢ MONG MUỐN]';
 
-  // Form field handlers
-  const handleFunctionChange = (index: number, val: string) => {
-    const updated = [...idea.functions];
-    updated[index] = val;
-    setIdea(prev => ({ ...prev, functions: updated }));
-  };
-
-  const handleAddFunction = () => {
-    if (idea.functions.length < 7) {
-      setIdea(prev => ({ ...prev, functions: [...prev.functions, ''] }));
-    }
-  };
-
-  const handleRemoveFunction = (index: number) => {
-    if (idea.functions.length > 1) {
-      const updated = idea.functions.filter((_, i) => i !== index);
-      setIdea(prev => ({ ...prev, functions: updated }));
-    }
-  };
-
-  const handleToggleUiStyle = (style: string) => {
-    setIdea(prev => {
-      const exists = prev.uiStyle.includes(style);
-      if (exists) {
-        return { ...prev, uiStyle: prev.uiStyle.filter(s => s !== style) };
-      } else {
-        return { ...prev, uiStyle: [...prev.uiStyle, style] };
-      }
-    });
-  };
-
-  const handleToggleConstraint = (item: string) => {
-    setIdea(prev => {
-      const exists = prev.constraints.includes(item);
-      if (exists) {
-        return { ...prev, constraints: prev.constraints.filter(c => c !== item) };
-      } else {
-        return { ...prev, constraints: [...prev.constraints, item] };
-      }
-    });
-  };
-
-  const handleResetForm = () => {
-    setIdea({
-      problem: '',
-      targetAudience: '',
-      functions: ['', '', ''],
-      userFlow: '',
-      mandatoryContent: '',
-      uiStyle: ['Đơn giản', 'Hiện đại'],
-      otherUiReqs: '',
-      constraints: [
-        'Hoạt động trong khoảng 5 phút',
-        'Không yêu cầu đăng nhập',
-        'Không thu thập dữ liệu cá nhân',
-        'Sử dụng được trên điện thoại',
-        'Không cần cơ sở dữ liệu',
-        'Nội dung hoàn toàn bằng tiếng Việt'
-      ]
-    });
-    setValidationError(null);
-    setActiveStep(1);
-    setCurrentQuestion(1);
-  };
-
-  // AI Suggestion Handler
-  const handleAiSuggest = async (questionIdx: number) => {
-    setLoadingAiQuestion(questionIdx);
-    setAiNote(null);
-
-    try {
-      const res = await fetch('/api/suggest-idea', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          questionIndex: questionIdx,
-          problem: idea.problem,
-          targetAudience: idea.targetAudience,
-          functions: idea.functions,
-          userFlow: idea.userFlow,
-          mandatoryContent: idea.mandatoryContent
-        })
-      });
-
-      const json = await res.json();
-      if (json.success && json.data) {
-        const d = json.data;
-        if (questionIdx === 1 && d.suggestion) {
-          setIdea(prev => ({ ...prev, problem: d.suggestion }));
-        } else if (questionIdx === 2 && d.suggestion) {
-          setIdea(prev => ({ ...prev, targetAudience: d.suggestion }));
-        } else if (questionIdx === 3 && Array.isArray(d.functions)) {
-          setIdea(prev => ({ ...prev, functions: d.functions }));
-        } else if (questionIdx === 4 && d.suggestion) {
-          setIdea(prev => ({ ...prev, userFlow: d.suggestion }));
-        } else if (questionIdx === 5 && d.suggestion) {
-          setIdea(prev => ({ ...prev, mandatoryContent: d.suggestion }));
-          setAiNote("⚠️ AI chỉ gợi ý nội dung mẫu. Vui lòng đối chiếu với tài liệu chuyên môn chính thức.");
-        } else if (questionIdx === 6) {
-          if (Array.isArray(d.uiStyle)) {
-            setIdea(prev => ({ ...prev, uiStyle: Array.from(new Set([...prev.uiStyle, ...d.uiStyle])) }));
-          }
-          if (d.otherUiReqs) {
-            setIdea(prev => ({ ...prev, otherUiReqs: d.otherUiReqs }));
-          }
-        } else if (questionIdx === 7 && Array.isArray(d.constraints)) {
-          setIdea(prev => ({ ...prev, constraints: Array.from(new Set([...prev.constraints, ...d.constraints])) }));
-        }
-      }
-    } catch (err) {
-      console.warn("AI suggestion fallback:", err);
-      if (questionIdx === 1) {
-        setIdea(prev => ({ ...prev, problem: "Học sinh thường gặp khó khăn khi phân biệt các nhóm kiến thức lý thuyết và bài tập vận dụng thực tế." }));
-      } else if (questionIdx === 2) {
-        setIdea(prev => ({ ...prev, targetAudience: "Học sinh THCS (Lớp 6 - Lớp 9)" }));
-      } else if (questionIdx === 3) {
-        setIdea(prev => ({
-          ...prev,
-          functions: [
-            "Hiển thị danh sách thẻ thông tin/bài tập tương tác.",
-            "Cho phép học sinh thực hiện phân loại hoặc ghép cặp.",
-            "Kiểm tra đáp án tức thì và hiển thị phản hồi giải thích.",
-            "Ghi nhận điểm số và thanh tiến độ hoàn thành.",
-            "Màn hình tổng kết và gợi ý nội dung ôn tập."
-          ]
+      if (idea.targetAudience.trim() || idea.supportTask.trim() || idea.desiredOutcome.trim()) {
+        const sentence = `Tôi cần một webapp giúp ${user} ${task} để ${outcome}.`;
+        setIdea(prev => ({ 
+          ...prev, 
+          demandSentence: sentence,
+          // default objective to demandSentence if objective not filled
+          objective: prev.objective ? prev.objective : sentence
         }));
-      } else if (questionIdx === 4) {
-        setIdea(prev => ({ ...prev, userFlow: "Mở webapp → Đọc hướng dẫn nhiệm vụ → Thao tác làm bài → Nhận ngay kết quả đúng/sai → Xem đáp án & Lời giải → Thực hành lại." }));
-      } else if (questionIdx === 5) {
-        setIdea(prev => ({ ...prev, mandatoryContent: "10 câu hỏi/khái niệm cốt lõi theo chương trình học, kèm đáp án chuẩn và lời giải thích ngắn 2-3 câu." }));
-        setAiNote("⚠️ AI chỉ gợi ý nội dung mẫu. Vui lòng kiểm tra lại theo chương trình giảng dạy của thầy cô.");
       }
-    } finally {
-      setLoadingAiQuestion(null);
     }
-  };
+  }, [idea.targetAudience, idea.supportTask, idea.desiredOutcome, isEditingDemand]);
 
-  // Calculate filled questions count out of 7
-  const filledCount = [
-    Boolean(idea.problem.trim()),
-    Boolean(idea.targetAudience.trim()),
-    idea.functions.some(f => f.trim() !== ''),
-    Boolean(idea.userFlow.trim()),
-    Boolean(idea.mandatoryContent.trim()),
-    idea.uiStyle.length > 0,
-    idea.constraints.length > 0
-  ].filter(Boolean).length;
-
-  // Validation before going to Review (Step 2)
-  const handleGoToReview = () => {
-    if (!idea.problem.trim()) {
-      setValidationError("Vui lòng nhập Vấn đề cần giải quyết (Câu 1).");
-      setFormLayoutMode('stepper');
-      setCurrentQuestion(1);
-      return;
-    }
-    if (!idea.targetAudience.trim()) {
-      setValidationError("Vui lòng nhập Đối tượng sử dụng (Câu 2).");
-      setFormLayoutMode('stepper');
-      setCurrentQuestion(2);
-      return;
-    }
-    const validFunctions = idea.functions.filter(f => f.trim() !== '');
-    if (validFunctions.length === 0) {
-      setValidationError("Vui lòng điền ít nhất 1 Chức năng chính (Câu 3).");
-      setFormLayoutMode('stepper');
-      setCurrentQuestion(3);
-      return;
-    }
-    if (!idea.mandatoryContent.trim()) {
-      setValidationError("Vui lòng nhập Nội dung bắt buộc (Câu 5).");
-      setFormLayoutMode('stepper');
-      setCurrentQuestion(5);
-      return;
-    }
-
+  // Load Example Data
+  const handleLoadExample = () => {
+    setIdea({ ...EXAMPLE_DATA });
+    setAttachedFiles([]);
+    setIsEditingDemand(true);
     setValidationError(null);
-    setActiveStep(2);
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(masterPromptText);
-    setCopied(true);
-    onCopyPromptText(masterPromptText);
-    setTimeout(() => setCopied(false), 2500);
-  };
+  // Auto-saved banner state
+  const [autoSavedNotice, setAutoSavedNotice] = useState<boolean>(false);
 
-  const handleSave = () => {
-    const title = idea.problem.length > 50 
-      ? `Webapp: ${idea.problem.substring(0, 48)}...`
-      : `Webapp: ${idea.problem || 'Ý tưởng riêng'}`;
-
-    const newSaved: SavedPrompt = {
-      id: `custom-prompt-${Date.now()}`,
+  // Generate and Auto-Save Master Prompt
+  const handleGenerateAndSave = () => {
+    const promptText = generateCustomWebappMasterPrompt(idea);
+    const title = idea.productName?.trim() || (idea.targetAudience ? `Webapp cho ${idea.targetAudience}` : 'Webapp Tùy chỉnh');
+    
+    const savedItem: SavedPrompt = {
+      id: `custom-${Date.now()}`,
       title: title,
       createdAt: new Date().toLocaleDateString('vi-VN', {
         day: '2-digit',
@@ -291,1016 +160,1029 @@ export const CustomIdeaBuilder: React.FC<CustomIdeaBuilderProps> = ({
       promptType: 'custom_idea',
       status: 'Đã tạo Prompt',
       variables: {
-        subject: 'Thiết kế riêng',
-        grade: idea.targetAudience || 'Mọi khối',
-        lesson_name: title,
-        game_type: 'custom_webapp',
-        objective: idea.problem,
-        core_content: idea.mandatoryContent,
-        keywords: idea.functions.filter(Boolean).join(', '),
-        question_count: 'Thực tế',
-        duration: 'Không giới hạn'
+        subject: idea.productName || 'Webapp Tùy chỉnh',
+        grade: idea.targetAudience || '',
+        lesson_name: idea.objective || idea.problem || '',
+        game_type: 'custom',
+        objective: idea.objective || '',
+        core_content: idea.contentData || '',
+        keywords: (Array.isArray(idea.functions) ? idea.functions : [idea.functions]).join(', '),
+        question_count: 'N/A',
+        duration: 'N/A'
       },
       customIdea: idea,
-      fullPrompt: masterPromptText
+      fullPrompt: promptText
     };
 
-    onSavePrompt(newSaved);
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 2500);
+    onSavePrompt(savedItem);
+    setAutoSavedNotice(true);
+    setActiveStep(4);
+    setValidationError(null);
+  };
+
+  // Reset Form
+  const handleResetForm = () => {
+    setIdea({
+      targetAudience: '',
+      problem: '',
+      supportTask: '',
+      desiredOutcome: '',
+      demandSentence: '',
+      productName: '',
+      objective: '',
+      contentData: '',
+      contentOptions: ['Chỉ sử dụng nội dung do giáo viên cung cấp'],
+      functions: [''],
+      userFlowSteps: ['Mở webapp', 'Chọn chủ đề', 'Làm câu hỏi', 'Nhận phản hồi', 'Xem kết quả'],
+      userFlow: '',
+      expectedOutput: '',
+      constraints: [...DEFAULT_CONSTRAINTS],
+      otherConstraints: ''
+    });
+    setAttachedFiles([]);
+    setIsEditingDemand(false);
+    setActiveStep(1);
+    setValidationError(null);
+  };
+
+  // Step 1 Validation -> Step 2
+  const handleGoToStep2 = () => {
+    if (!idea.targetAudience.trim()) {
+      setValidationError('Vui lòng điền thông tin "Ai sẽ sử dụng webapp?" (Người dùng).');
+      return;
+    }
+    if (!idea.problem.trim()) {
+      setValidationError('Vui lòng điền thông tin "Người dùng đang gặp khó khăn gì?" (Vấn đề).');
+      return;
+    }
+    if (!idea.supportTask.trim()) {
+      setValidationError('Vui lòng điền thông tin "Webapp cần hỗ trợ việc gì?".');
+      return;
+    }
+    if (!idea.desiredOutcome.trim()) {
+      setValidationError('Vui lòng điền thông tin "Kết quả mong muốn".');
+      return;
+    }
+
+    setValidationError(null);
+    setActiveStep(2);
+  };
+
+  // Step 2 Validation -> Step 3
+  const handleGoToStep3 = () => {
+    const validFns = (Array.isArray(idea.functions) ? idea.functions : [idea.functions])
+      .filter(f => f && f.trim() !== '');
+    if (validFns.length === 0) {
+      setValidationError('Vui lòng gõ hoặc dán ít nhất 1 chức năng chính cho webapp.');
+      return;
+    }
+
+    const validSteps = idea.userFlowSteps ? idea.userFlowSteps.filter(s => s.trim() !== '') : [];
+    if (validSteps.length === 0) {
+      setValidationError('Vui lòng điền ít nhất 1 bước trong luồng sử dụng.');
+      return;
+    }
+
+    setValidationError(null);
+    setActiveStep(3);
+  };
+
+  // File Upload Handler for Section C
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file: File) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = (event.target?.result as string) || '';
+        const newFileObj = { name: file.name, size: file.size, content: text };
+        
+        setAttachedFiles(prev => [...prev, newFileObj]);
+
+        setIdea(prev => {
+          const fileSnippet = text.trim() 
+            ? `\n[Tệp đính kèm: ${file.name}]\n${text.slice(0, 3000)}${text.length > 3000 ? '\n...(đã rút gọn nội dung tệp)' : ''}`
+            : `\n[Tệp đính kèm: ${file.name}]`;
+          return {
+            ...prev,
+            contentData: prev.contentData ? `${prev.contentData}\n${fileSnippet}` : fileSnippet.trim()
+          };
+        });
+      };
+
+      if (file.type.startsWith('text/') || file.name.match(/\.(txt|md|csv|json|js|ts|html|css|xml)$/i)) {
+        reader.readAsText(file);
+      } else {
+        const newFileObj = { name: file.name, size: file.size };
+        setAttachedFiles(prev => [...prev, newFileObj]);
+        setIdea(prev => ({
+          ...prev,
+          contentData: prev.contentData ? `${prev.contentData}\n[Tệp đính kèm: ${file.name}]` : `[Tệp đính kèm: ${file.name}]`
+        }));
+      }
+    });
+
+    e.target.value = '';
+  };
+
+  const handleRemoveAttachedFile = (index: number) => {
+    const fileToRemove = attachedFiles[index];
+    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+    
+    if (fileToRemove) {
+      setIdea(prev => {
+        let updatedData = prev.contentData || '';
+        updatedData = updatedData.replace(new RegExp(`\n?\\[Tệp đính kèm: ${fileToRemove.name}\\][\\s\\S]*?(\\n\\n|$)`, 'g'), '');
+        updatedData = updatedData.replace(new RegExp(`\n?\\[Tệp đính kèm: ${fileToRemove.name}\\]`, 'g'), '');
+        return { ...prev, contentData: updatedData.trim() };
+      });
+    }
+  };
+
+  // Master Prompt text
+  const masterPromptText = generateCustomWebappMasterPrompt(idea);
+
+  // Copy Master Prompt Handler
+  const handleCopyPrompt = () => {
+    navigator.clipboard.writeText(masterPromptText);
+    setCopied(true);
+    setShowCopyNotice(true);
+    onCopyPromptText(masterPromptText);
+    setTimeout(() => {
+      setCopied(false);
+    }, 2500);
+  };
+
+  // Checkpoint validation items for Step 3
+  const checkpointItems = [
+    { label: 'Đã xác định một vấn đề cụ thể', pass: Boolean(idea.problem.trim()), step: 1 },
+    { label: 'Đã xác định người dùng', pass: Boolean(idea.targetAudience.trim()), step: 1 },
+    { label: 'Đã xác định mục tiêu', pass: Boolean(idea.objective.trim() || idea.demandSentence.trim()), step: 2 },
+    { label: 'Có các chức năng chính', pass: (Array.isArray(idea.functions) ? idea.functions : [idea.functions]).filter(f => f && f.trim() !== '').length >= 1, step: 2 },
+    { label: 'Có luồng sử dụng', pass: Boolean((idea.userFlowSteps && idea.userFlowSteps.filter(s => s.trim() !== '').length > 0) || idea.userFlow.trim()), step: 2 },
+    { label: 'Biết app cần trả về kết quả gì', pass: Boolean(idea.expectedOutput.trim() || idea.desiredOutcome.trim()), step: 2 },
+    { label: 'Đã xác định các ràng buộc', pass: idea.constraints.length > 0, step: 2 }
+  ];
+
+  const isAllCheckpointsPassed = checkpointItems.every(item => item.pass);
+
+  const handleUserStepChange = (index: number, value: string) => {
+    const steps = idea.userFlowSteps ? [...idea.userFlowSteps] : ['Mở webapp'];
+    steps[index] = value;
+    setIdea(prev => ({ 
+      ...prev, 
+      userFlowSteps: steps,
+      userFlow: steps.filter(Boolean).join(' → ')
+    }));
+  };
+
+  const handleAddUserStep = () => {
+    const steps = idea.userFlowSteps ? [...idea.userFlowSteps] : [];
+    if (steps.length < 8) {
+      steps.push('');
+      setIdea(prev => ({ ...prev, userFlowSteps: steps }));
+    }
+  };
+
+  const handleRemoveUserStep = (index: number) => {
+    const steps = idea.userFlowSteps ? [...idea.userFlowSteps] : [];
+    if (steps.length > 1) {
+      steps.splice(index, 1);
+      setIdea(prev => ({ 
+        ...prev, 
+        userFlowSteps: steps,
+        userFlow: steps.filter(Boolean).join(' → ')
+      }));
+    }
+  };
+
+  const handleToggleContentOption = (opt: string) => {
+    setIdea(prev => {
+      const current = prev.contentOptions || [];
+      if (current.includes(opt)) {
+        return { ...prev, contentOptions: current.filter(o => o !== opt) };
+      } else {
+        return { ...prev, contentOptions: [...current, opt] };
+      }
+    });
+  };
+
+  const handleToggleConstraint = (c: string) => {
+    setIdea(prev => {
+      if (prev.constraints.includes(c)) {
+        return { ...prev, constraints: prev.constraints.filter(item => item !== c) };
+      } else {
+        return { ...prev, constraints: [...prev.constraints, c] };
+      }
+    });
   };
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      {/* Top Banner & Mode Switcher */}
-      <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-blue-50 border border-amber-300 rounded-2xl p-5 sm:p-6 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-start gap-3.5">
-            <div className="p-3.5 bg-amber-500 text-white rounded-2xl shadow-md shrink-0 mt-0.5">
-              <Sparkles className="w-7 h-7" />
+      {/* HEADER & PIPELINE PRINCIPLE BANNER */}
+      <div className="bg-gradient-to-r from-purple-950 via-indigo-900 to-slate-900 border border-purple-800/60 rounded-3xl p-6 sm:p-8 shadow-xl text-white">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <div className="p-4 bg-gradient-to-br from-orange-500 to-amber-500 text-white rounded-2xl shadow-lg shrink-0 mt-0.5">
+              <Sparkles className="w-8 h-8" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="bg-amber-600 text-white text-[11px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider">
-                  Mới • Tư duy Vibe Coding
+                <span className="bg-orange-500/30 text-orange-300 border border-orange-500/40 text-[11px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
+                  Quy trình Vibe Coding
                 </span>
-                <span className="text-xs text-amber-900 font-bold">
-                  Bắt đầu từ nhu cầu giảng dạy thực tế
+                <span className="text-xs text-purple-200 font-extrabold">
+                  4 Bước chuẩn hóa ý tưởng webapp
                 </span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight mt-1">
-                THIẾT KẾ WEBAPP THEO Ý TƯỞNG RIÊNG
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-2">
+                TẠO WEBAPP THEO Ý TƯỞNG RIÊNG
               </h2>
-              <p className="text-sm text-gray-600 mt-1 max-w-3xl leading-relaxed">
-                Biến bất kỳ ý tưởng hoặc bài toán giảng dạy nào thành Webapp tương tác độc đáo cho học sinh. Hệ thống sẽ tự đóng gói thành <strong>Master Prompt chuẩn 100%</strong> cho Google AI Studio.
+              <p className="text-sm text-purple-100 mt-2 max-w-3xl leading-relaxed font-medium">
+                Cổng tập huấn hướng dẫn thầy cô suy nghĩ từ nhu cầu thực tế, chuẩn hóa Requirements và tự động đóng gói thành <strong className="text-orange-400 font-extrabold">Master Prompt</strong> dành cho Google AI Studio.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={onSwitchToGameMode}
-              className="px-4 py-2.5 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 text-[#0052CC] text-xs sm:text-sm font-bold flex items-center gap-2 transition-all shadow-sm"
+              className="px-4 py-2.5 rounded-2xl border border-purple-400/40 bg-purple-900/60 hover:bg-purple-800/80 text-white text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all shadow-md"
             >
-              <Layers className="w-4 h-4 text-blue-600" />
-              <span>Chuyển sang Mẫu trò chơi sẵn có</span>
+              <Layers className="w-4 h-4 text-orange-400" />
+              <span>Chuyển sang Mẫu trò chơi có sẵn</span>
             </button>
             <button
               onClick={handleResetForm}
-              className="p-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-600 transition-all shadow-sm"
-              title="Làm mới toàn bộ form"
+              className="p-2.5 rounded-2xl border border-purple-400/40 bg-purple-900/60 hover:bg-purple-800/80 text-white transition-all shadow-md"
+              title="Làm mới form"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-4 h-4 text-orange-400" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Educational Mindset Note */}
-      <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 shadow-sm flex items-center gap-3.5">
-        <Lightbulb className="w-6 h-6 text-amber-400 shrink-0" />
-        <p className="text-xs sm:text-sm font-semibold text-gray-200 leading-relaxed">
-          <strong className="text-amber-300 uppercase">Triết lý Vibe Coding:</strong> “Đừng bắt đầu bằng giao diện hay công nghệ. Hãy bắt đầu từ bài toán thực tế thầy cô muốn học sinh giải quyết.”
-        </p>
+      {/* CORE GUIDING PRINCIPLE CARD */}
+      <div className="bg-gradient-to-r from-purple-950 to-indigo-950 border border-purple-800/50 text-white rounded-2xl p-4 sm:p-5 shadow-md flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-orange-500/20 border border-orange-500/30 text-orange-400 rounded-xl shrink-0">
+            <Lightbulb className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-orange-400 uppercase tracking-wider">THÔNG ĐIỆP TẬP HUẤN</h4>
+            <p className="text-sm font-bold text-purple-100 mt-0.5">
+              “Bắt đầu từ vấn đề – không bắt đầu từ công cụ.”
+            </p>
+          </div>
+        </div>
+        
+        {activeStep === 1 && (
+          <button
+            onClick={handleLoadExample}
+            className="px-3.5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-sm shrink-0"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Xem ví dụ</span>
+          </button>
+        )}
       </div>
 
-      {/* 3 Main Process Tabs */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm">
-        <div className="grid grid-cols-3 gap-2 text-center text-xs sm:text-sm font-bold">
-          <button
-            onClick={() => setActiveStep(1)}
-            className={`p-3 rounded-xl transition-all border flex items-center justify-center gap-2 ${
-              activeStep === 1
-                ? 'bg-amber-50 border-amber-400 text-amber-950 shadow-sm ring-2 ring-amber-200'
-                : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-extrabold shrink-0">1</span>
-            <span>7 Câu hỏi thiết kế</span>
-          </button>
-          <button
-            onClick={handleGoToReview}
-            className={`p-3 rounded-xl transition-all border flex items-center justify-center gap-2 ${
-              activeStep === 2
-                ? 'bg-amber-50 border-amber-400 text-amber-950 shadow-sm ring-2 ring-amber-200'
-                : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <span className="w-6 h-6 rounded-full bg-amber-200 text-amber-900 text-xs flex items-center justify-center font-extrabold shrink-0">2</span>
-            <span>Xem lại bản thiết kế</span>
-          </button>
-          <button
-            disabled={activeStep < 3}
-            onClick={() => activeStep >= 3 && setActiveStep(3)}
-            className={`p-3 rounded-xl transition-all border flex items-center justify-center gap-2 ${
-              activeStep === 3
-                ? 'bg-emerald-50 border-emerald-400 text-emerald-950 shadow-sm ring-2 ring-emerald-200'
-                : 'bg-gray-50 border-gray-200 text-gray-400 opacity-60'
-            }`}
-          >
-            <span className="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center font-extrabold shrink-0">3</span>
-            <span>Master Prompt & AI Studio</span>
-          </button>
+      {/* PROGRESS STEPPER (4 STEPS) */}
+      <div className="bg-white border border-purple-100 rounded-2xl p-3 shadow-sm">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center text-xs font-extrabold">
+          {[
+            { step: 1, title: '1. Nhu cầu', subtitle: 'Xác định bài toán' },
+            { step: 2, title: '2. Requirements', subtitle: 'Thiết kế yêu cầu' },
+            { step: 3, title: '3. Kiểm tra', subtitle: 'Soát lỗi & Checkpoint' },
+            { step: 4, title: '4. Master Prompt', subtitle: 'Tạo prompt AI Studio' }
+          ].map(item => {
+            const isActive = activeStep === item.step;
+            const isCompleted = activeStep > item.step;
+
+            return (
+              <button
+                key={item.step}
+                onClick={() => {
+                  if (item.step < activeStep) {
+                    setActiveStep(item.step);
+                    setValidationError(null);
+                  } else if (item.step === 2 && activeStep === 1) {
+                    handleGoToStep2();
+                  } else if (item.step === 3 && activeStep === 2) {
+                    handleGoToStep3();
+                  } else if (item.step === 4 && activeStep === 3) {
+                    handleGenerateAndSave();
+                  }
+                }}
+                className={`p-3 rounded-xl transition-all border flex flex-col items-center justify-center gap-1 ${
+                  isActive
+                    ? 'bg-purple-50 border-purple-600 text-purple-950 shadow-sm ring-2 ring-purple-200'
+                    : isCompleted
+                    ? 'bg-emerald-50/80 border-emerald-300 text-emerald-900 hover:bg-emerald-100'
+                    : 'bg-slate-50 border-slate-200 text-slate-400 hover:bg-slate-100'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className={`w-5 h-5 rounded-full text-[11px] flex items-center justify-center font-black ${
+                    isActive ? 'bg-orange-500 text-white' : isCompleted ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
+                  }`}>
+                    {isCompleted ? '✓' : item.step}
+                  </span>
+                  <span className="text-xs font-extrabold">{item.title}</span>
+                </div>
+                <span className="text-[10px] text-slate-500 font-medium hidden sm:inline">{item.subtitle}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* STEP 1: 7 QUESTIONS FORM WITH SCIENTIFIC MODULES LAYOUT */}
+      {/* VALIDATION ERROR BANNER */}
+      {validationError && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-xs sm:text-sm text-red-700 flex items-center justify-between gap-3 animate-fadeIn">
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+            <span className="font-semibold">{validationError}</span>
+          </div>
+          <button onClick={() => setValidationError(null)} className="text-red-500 font-bold hover:underline text-xs">Đóng</button>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* BƯỚC 1 — XÁC ĐỊNH NHU CẦU */}
+      {/* ========================================================================= */}
       {activeStep === 1 && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 shadow-sm space-y-7">
-          {/* Header Controls & Layout Mode Switcher */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-gray-200">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-extrabold text-amber-600 uppercase tracking-wider">
-                  BẢN VẼ TƯ DUY
-                </span>
-                <span className="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
-                  Hoàn thành: {filledCount}/7 câu hỏi
-                </span>
-              </div>
-              <h3 className="text-xl font-extrabold text-gray-900 tracking-tight mt-1">
-                Biểu mẫu 7 câu hỏi định hình Webapp
-              </h3>
-              <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-                Các câu hỏi được phân loại theo 3 Mô-đun khoa học giúp giáo viên dễ dàng hình dung tổng thể ứng dụng.
-              </p>
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 shadow-sm space-y-7 animate-fadeIn">
+          <div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-extrabold text-orange-600 uppercase tracking-wider">
+                BƯỚC 1 — BẮT ĐẦU TỪ BÀI TOÁN
+              </span>
+              <button
+                onClick={handleLoadExample}
+                className="text-xs text-purple-700 hover:text-purple-900 font-bold underline flex items-center gap-1"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Nạp ví dụ mẫu: Ôn tập Tin học 8</span>
+              </button>
+            </div>
+            <h3 className="text-xl font-extrabold text-gray-900 tracking-tight mt-1">
+              BƯỚC 1 — Bạn đang muốn giải quyết vấn đề gì?
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1 leading-relaxed">
+              Đừng bắt đầu bằng việc chọn công nghệ hoặc nghĩ ngay đến một app. Hãy bắt đầu từ một vấn đề thật trong công việc hoặc dạy học của bạn.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* A. NGƯỜI DÙNG */}
+            <div className="space-y-2">
+              <label className="block text-xs font-extrabold text-gray-900 uppercase tracking-wide">
+                A. NGƯỜI DÙNG <span className="text-red-500">*</span>
+              </label>
+              <p className="text-xs text-gray-500">Ai sẽ sử dụng webapp?</p>
+              <input
+                type="text"
+                placeholder="Ví dụ: Học sinh lớp 8"
+                value={idea.targetAudience}
+                onChange={e => setIdea(prev => ({ ...prev, targetAudience: e.target.value }))}
+                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-xs sm:text-sm text-gray-900 font-medium"
+              />
             </div>
 
-            {/* Layout Mode Switcher Buttons */}
-            <div className="flex items-center bg-gray-100 p-1.5 rounded-xl text-xs shrink-0 self-start md:self-auto">
-              <button
-                onClick={() => setFormLayoutMode('full')}
-                className={`px-3.5 py-2 rounded-lg font-bold flex items-center gap-1.5 transition-all ${
-                  formLayoutMode === 'full'
-                    ? 'bg-white text-amber-900 shadow-sm font-extrabold'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <LayoutGrid className="w-4 h-4 text-amber-600" />
-                <span>Bố cục 3 Mô-đun (Toàn cảnh)</span>
-              </button>
+            {/* B. VẤN ĐỀ */}
+            <div className="space-y-2">
+              <label className="block text-xs font-extrabold text-gray-900 uppercase tracking-wide">
+                B. VẤN ĐỀ <span className="text-red-500">*</span>
+              </label>
+              <p className="text-xs text-gray-500">Người dùng đang gặp khó khăn gì?</p>
+              <textarea
+                rows={3}
+                placeholder="Ví dụ: Học sinh cần ôn lại kiến thức trước kỳ kiểm tra nhưng tài liệu còn phân tán và việc tự ôn chưa có phản hồi ngay."
+                value={idea.problem}
+                onChange={e => setIdea(prev => ({ ...prev, problem: e.target.value }))}
+                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-xs sm:text-sm text-gray-900 font-medium leading-relaxed"
+              />
+            </div>
 
-              <button
-                onClick={() => setFormLayoutMode('stepper')}
-                className={`px-3.5 py-2 rounded-lg font-bold flex items-center gap-1.5 transition-all ${
-                  formLayoutMode === 'stepper'
-                    ? 'bg-white text-amber-900 shadow-sm font-extrabold'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <ListOrdered className="w-4 h-4 text-blue-600" />
-                <span>Từng câu hỏi (Wizard)</span>
-              </button>
+            {/* C. VIỆC CẦN HỖ TRỢ */}
+            <div className="space-y-2">
+              <label className="block text-xs font-extrabold text-gray-900 uppercase tracking-wide">
+                C. VIỆC CẦN HỖ TRỢ <span className="text-red-500">*</span>
+              </label>
+              <p className="text-xs text-gray-500">Webapp cần hỗ trợ việc gì?</p>
+              <textarea
+                rows={3}
+                placeholder="Ví dụ: Giúp học sinh luyện câu hỏi ôn tập và nhận phản hồi sau mỗi câu."
+                value={idea.supportTask}
+                onChange={e => setIdea(prev => ({ ...prev, supportTask: e.target.value }))}
+                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-xs sm:text-sm text-gray-900 font-medium leading-relaxed"
+              />
+            </div>
+
+            {/* D. KẾT QUẢ MONG MUỐN */}
+            <div className="space-y-2">
+              <label className="block text-xs font-extrabold text-gray-900 uppercase tracking-wide">
+                D. KẾT QUẢ MONG MUỐN <span className="text-red-500">*</span>
+              </label>
+              <p className="text-xs text-gray-500">Sau khi sử dụng webapp, bạn muốn người dùng đạt được điều gì?</p>
+              <textarea
+                rows={3}
+                placeholder="Ví dụ: Học sinh biết câu nào đúng, câu nào sai và nội dung nào cần ôn lại."
+                value={idea.desiredOutcome}
+                onChange={e => setIdea(prev => ({ ...prev, desiredOutcome: e.target.value }))}
+                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-xs sm:text-sm text-gray-900 font-medium leading-relaxed"
+              />
             </div>
           </div>
 
-          {validationError && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-xs sm:text-sm text-red-700 flex items-center gap-2.5">
-              <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
-              <span className="font-semibold">{validationError}</span>
+          {/* CÂU MÔ TẢ NHU CẦU CARD */}
+          <div className="bg-gradient-to-br from-purple-50 via-indigo-50/50 to-amber-50/30 border border-purple-200 rounded-2xl p-5 shadow-sm space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Target className="w-5 h-5 text-purple-700" />
+                <h4 className="text-xs font-black text-purple-950 uppercase tracking-wider">
+                  CÂU MÔ TẢ NHU CẦU (TỰ ĐỘNG CHUẨN HÓA)
+                </h4>
+              </div>
+              <button
+                onClick={() => setIsEditingDemand(!isEditingDemand)}
+                className="text-xs text-purple-700 hover:text-purple-900 font-bold flex items-center gap-1"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>{isEditingDemand ? 'Tự động tổng hợp' : 'Chỉnh sửa trực tiếp'}</span>
+              </button>
             </div>
-          )}
 
-          {aiNote && (
-            <div className="p-4 bg-amber-50 border border-amber-300 rounded-xl text-xs sm:text-sm text-amber-900 flex items-center gap-2.5">
-              <Info className="w-5 h-5 text-amber-600 shrink-0" />
-              <span className="font-semibold">{aiNote}</span>
+            {isEditingDemand ? (
+              <textarea
+                rows={3}
+                value={idea.demandSentence}
+                onChange={e => setIdea(prev => ({ ...prev, demandSentence: e.target.value }))}
+                className="w-full px-3.5 py-2.5 bg-white border border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-xs sm:text-sm font-semibold text-purple-950 leading-relaxed"
+              />
+            ) : (
+              <p className="text-xs sm:text-sm font-bold text-purple-950 bg-white/80 border border-purple-200/80 p-3.5 rounded-xl leading-relaxed">
+                “{idea.demandSentence || 'Tôi cần một webapp giúp [NGƯỜI DÙNG] [VIỆC CẦN HỖ TRỢ] để [KẾT QUẢ MONG MUỐN].'}”
+              </p>
+            )}
+
+            <p className="text-[11px] text-purple-700/80 font-medium">
+              Cấu trúc: “Tôi cần một webapp giúp [NGƯỜI DÙNG] [VIỆC CẦN HỖ TRỢ] để [KẾT QUẢ MONG MUỐN].”
+            </p>
+          </div>
+
+          {/* NEXT BUTTON */}
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={handleGoToStep2}
+              className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-sm flex items-center gap-2 transition-all shadow-md"
+            >
+              <span>Tiếp tục xây dựng Requirements</span>
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* BƯỚC 2 — THIẾT KẾ REQUIREMENTS */}
+      {/* ========================================================================= */}
+      {activeStep === 2 && (
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 shadow-sm space-y-7 animate-fadeIn">
+          {/* TOP CARD: NHU CẦU ĐÃ XÁC ĐỊNH */}
+          <div className="bg-purple-900 text-white rounded-2xl p-4 sm:p-5 shadow-sm space-y-2">
+            <span className="text-[11px] font-extrabold text-orange-400 uppercase tracking-wider block">
+              NHU CẦU ĐÃ XÁC ĐỊNH (TỪ BƯỚC 1)
+            </span>
+            <p className="text-sm font-bold text-purple-100 leading-relaxed">
+              “{idea.demandSentence || `Tôi cần một webapp giúp ${idea.targetAudience} ${idea.supportTask} để ${idea.desiredOutcome}.`}”
+            </p>
+          </div>
+
+          {/* CARD: PHẠM VI PHIÊN BẢN ĐẦU TIÊN */}
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-950 space-y-2">
+            <h4 className="text-xs font-black uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-amber-600" />
+              <span>PHIÊN BẢN ĐẦU TIÊN NÊN ĐỦ NHỎ</span>
+            </h4>
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-amber-900">
+              <span className="px-2.5 py-1 bg-white border border-amber-300 rounded-lg">01 vấn đề</span>
+              <span>+</span>
+              <span className="px-2.5 py-1 bg-white border border-amber-300 rounded-lg">01 nhóm người dùng</span>
+              <span>+</span>
+              <span className="px-2.5 py-1 bg-white border border-amber-300 rounded-lg">3–5 chức năng</span>
+              <span>+</span>
+              <span className="px-2.5 py-1 bg-white border border-amber-300 rounded-lg">01 luồng chính</span>
             </div>
-          )}
+            <p className="text-[11px] font-semibold text-amber-800 italic mt-1">
+              “Nhỏ nhưng chạy được &gt; Lớn nhưng chưa hoàn thiện”
+            </p>
+          </div>
 
-          {/* MODE A: FULL 3-MODULE SCIENTIFIC LAYOUT */}
-          {formLayoutMode === 'full' && (
-            <div className="space-y-8 animate-fadeIn">
-              {/* ==================== MÔ-ĐUN 1 ==================== */}
-              <div className="bg-gradient-to-br from-amber-50/60 via-amber-50/20 to-white border border-amber-200 rounded-2xl p-5 sm:p-6 space-y-5 shadow-sm">
-                <div className="flex items-center gap-2.5 border-b border-amber-200/80 pb-3">
-                  <div className="p-2 bg-amber-500 text-white rounded-xl shadow-sm">
-                    <Target className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="text-[11px] font-extrabold text-amber-800 uppercase tracking-wider block">MÔ-ĐUN I</span>
-                    <h4 className="text-base sm:text-lg font-extrabold text-gray-900">ĐỊNH HÌNH BÀI TOÁN & ĐỐI TƯỢNG HỌC SINH</h4>
-                  </div>
+          <div>
+            <span className="text-xs font-extrabold text-purple-600 uppercase tracking-wider">
+              BƯỚC 2 — CHUẨN HÓA YÊU CẦU
+            </span>
+            <h3 className="text-xl font-extrabold text-gray-900 tracking-tight mt-1">
+              BƯỚC 2 — Webapp cần làm được gì?
+            </h3>
+          </div>
+
+          <div className="space-y-6">
+            {/* A. TÊN SẢN PHẨM */}
+            <div className="space-y-2">
+              <label className="block text-xs font-extrabold text-gray-900 uppercase tracking-wide">
+                A. TÊN SẢN PHẨM <span className="text-gray-400 font-normal">(Không bắt buộc)</span>
+              </label>
+              <input
+                type="text"
+                placeholder="Ví dụ: Ôn tập Tin học 8"
+                value={idea.productName}
+                onChange={e => setIdea(prev => ({ ...prev, productName: e.target.value }))}
+                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-xs sm:text-sm text-gray-900 font-medium"
+              />
+            </div>
+
+            {/* B. MỤC TIÊU */}
+            <div className="space-y-2">
+              <label className="block text-xs font-extrabold text-gray-900 uppercase tracking-wide">
+                B. MỤC TIÊU CHÍNH CỦA WEBAPP
+              </label>
+              <textarea
+                rows={2}
+                value={idea.objective}
+                onChange={e => setIdea(prev => ({ ...prev, objective: e.target.value }))}
+                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-xs sm:text-sm text-gray-900 font-medium leading-relaxed"
+              />
+            </div>
+
+            {/* C. NỘI DUNG / DỮ LIỆU */}
+            <div className="space-y-3 bg-slate-50 border border-slate-200 rounded-2xl p-4.5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <label className="block text-xs font-extrabold text-gray-900 uppercase tracking-wide">
+                    C. NỘI DUNG / DỮ LIỆU
+                  </label>
+                  <p className="text-xs text-gray-500 mt-0.5">Webapp sẽ sử dụng nội dung hoặc dữ liệu gì?</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {/* CÂU 1: VẤN ĐỀ CẦN GIẢI QUYẾT */}
-                  <div className="bg-white border border-amber-200/90 rounded-2xl p-4.5 space-y-3.5 shadow-sm">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-lg bg-amber-500 text-white text-xs font-extrabold flex items-center justify-center shrink-0">1</span>
-                        <h5 className="text-sm font-extrabold text-gray-900">Vấn đề cần giải quyết <span className="text-red-500">*</span></h5>
-                      </div>
-                      <button
-                        onClick={() => handleAiSuggest(1)}
-                        disabled={loadingAiQuestion === 1}
-                        className="px-3 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold flex items-center gap-1 transition-all shrink-0 disabled:opacity-50"
-                      >
-                        <Wand2 className={`w-3.5 h-3.5 text-amber-600 ${loadingAiQuestion === 1 ? 'animate-spin' : ''}`} />
-                        <span>{loadingAiQuestion === 1 ? 'Đang gợi ý...' : '✨ AI gợi ý'}</span>
-                      </button>
-                    </div>
-
-                    <p className="text-xs text-gray-500">Mô tả khó khăn hoặc nhu cầu cụ thể bạn muốn giải quyết cho học sinh.</p>
-
-                    <textarea
-                      rows={3}
-                      placeholder="Ví dụ: Học sinh thường nhầm lẫn giữa thiết bị vào và thiết bị ra trong môn Tin học 7..."
-                      value={idea.problem}
-                      onChange={e => setIdea(prev => ({ ...prev, problem: e.target.value }))}
-                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none text-xs sm:text-sm text-gray-800 font-medium leading-relaxed"
-                    />
-
-                    {/* Quick sample chips */}
-                    <div>
-                      <span className="text-[11px] font-bold text-gray-500 block mb-1.5">Bấm nhanh mẫu gợi ý:</span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {[
-                          "Nhầm lẫn thiết bị vào - thiết bị ra",
-                          "Khó ghi nhớ các mốc lịch sử",
-                          "Quên công thức quy đổi đơn vị",
-                          "Ôn tập từ vựng Tiếng Anh theo chủ đề"
-                        ].map((sample, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => setIdea(prev => ({ ...prev, problem: sample }))}
-                            className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-lg text-[11px] font-medium transition-all"
-                          >
-                            + {sample}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* CÂU 2: ĐỐI TƯỢNG SỬ DỤNG */}
-                  <div className="bg-white border border-amber-200/90 rounded-2xl p-4.5 space-y-3.5 shadow-sm">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-lg bg-amber-500 text-white text-xs font-extrabold flex items-center justify-center shrink-0">2</span>
-                        <h5 className="text-sm font-extrabold text-gray-900">Đối tượng sử dụng chính <span className="text-red-500">*</span></h5>
-                      </div>
-                      <button
-                        onClick={() => handleAiSuggest(2)}
-                        disabled={loadingAiQuestion === 2}
-                        className="px-3 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold flex items-center gap-1 transition-all shrink-0 disabled:opacity-50"
-                      >
-                        <Wand2 className={`w-3.5 h-3.5 text-amber-600 ${loadingAiQuestion === 2 ? 'animate-spin' : ''}`} />
-                        <span>{loadingAiQuestion === 2 ? 'Đang gợi ý...' : '✨ AI gợi ý'}</span>
-                      </button>
-                    </div>
-
-                    <p className="text-xs text-gray-500">Đối tượng học sinh hoặc nhóm người dùng sẽ thao tác trực tiếp.</p>
-
-                    <input
-                      type="text"
-                      placeholder="Ví dụ: Học sinh THCS Lớp 7 (12-13 tuổi)"
-                      value={idea.targetAudience}
-                      onChange={e => setIdea(prev => ({ ...prev, targetAudience: e.target.value }))}
-                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none text-xs sm:text-sm text-gray-800 font-medium"
-                    />
-
-                    {/* Quick target choice buttons */}
-                    <div>
-                      <span className="text-[11px] font-bold text-gray-500 block mb-1.5">Chọn nhanh cấp học:</span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {[
-                          "Học sinh Tiểu học (Lớp 3 - Lớp 5)",
-                          "Học sinh THCS (Lớp 6 - Lớp 9)",
-                          "Học sinh THPT (Lớp 10 - Lớp 12)",
-                          "Giáo viên môn chuyên ngành"
-                        ].map((target, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => setIdea(prev => ({ ...prev, targetAudience: target }))}
-                            className="px-2.5 py-1 bg-gray-100 hover:bg-amber-100 text-gray-800 hover:text-amber-900 border border-gray-200 rounded-lg text-[11px] font-medium transition-all"
-                          >
-                            {target}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                {/* FILE ATTACHMENT BUTTON */}
+                <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-900 text-xs font-extrabold transition-all border border-purple-200 shrink-0 shadow-sm">
+                  <Paperclip className="w-3.5 h-3.5 text-purple-700" />
+                  <span>Đính kèm tệp văn bản</span>
+                  <input
+                    type="file"
+                    multiple
+                    accept=".txt,.md,.csv,.json,.doc,.docx,.pdf,text/plain,application/json,text/csv"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </label>
               </div>
 
-              {/* ==================== MÔ-ĐUN 2 ==================== */}
-              <div className="bg-gradient-to-br from-blue-50/60 via-blue-50/20 to-white border border-blue-200 rounded-2xl p-5 sm:p-6 space-y-5 shadow-sm">
-                <div className="flex items-center gap-2.5 border-b border-blue-200/80 pb-3">
-                  <div className="p-2 bg-blue-600 text-white rounded-xl shadow-sm">
-                    <SlidersHorizontal className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="text-[11px] font-extrabold text-blue-800 uppercase tracking-wider block">MÔ-ĐUN II</span>
-                    <h4 className="text-base sm:text-lg font-extrabold text-gray-900">CHỨC NĂNG & LUỒNG TRẢI NGHIỆM HỌC SINH</h4>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {/* CÂU 3: CHỨC NĂNG CHÍNH */}
-                  <div className="bg-white border border-blue-200/90 rounded-2xl p-4.5 space-y-3.5 shadow-sm">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-lg bg-blue-600 text-white text-xs font-extrabold flex items-center justify-center shrink-0">3</span>
-                        <h5 className="text-sm font-extrabold text-gray-900">Các chức năng chính (3–5 tính năng) <span className="text-red-500">*</span></h5>
-                      </div>
+              {/* ATTACHED FILES CHIPS */}
+              {attachedFiles.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {attachedFiles.map((file, idx) => (
+                    <div key={idx} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-purple-300 text-xs font-semibold text-purple-950 shadow-sm">
+                      <Paperclip className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                      <span className="max-w-[180px] truncate">{file.name}</span>
+                      <span className="text-[10px] text-gray-400">({Math.round(file.size / 1024)} KB)</span>
                       <button
-                        onClick={() => handleAiSuggest(3)}
-                        disabled={loadingAiQuestion === 3}
-                        className="px-3 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-300 text-xs font-bold flex items-center gap-1 transition-all shrink-0 disabled:opacity-50"
+                        type="button"
+                        onClick={() => handleRemoveAttachedFile(idx)}
+                        className="text-gray-400 hover:text-red-500 font-black ml-1 transition-colors"
+                        title="Xóa tệp đính kèm"
                       >
-                        <Wand2 className={`w-3.5 h-3.5 text-blue-600 ${loadingAiQuestion === 3 ? 'animate-spin' : ''}`} />
-                        <span>{loadingAiQuestion === 3 ? 'Đang gợi ý...' : '✨ AI gợi ý 5 chức năng'}</span>
+                        <X className="w-3.5 h-3.5" />
                       </button>
                     </div>
+                  ))}
+                </div>
+              )}
 
-                    <p className="text-xs text-gray-500">Liệt kê các thao tác hoặc tính năng quan trọng nhất của Webapp.</p>
+              <textarea
+                rows={4}
+                placeholder={`Ví dụ:
+- Câu hỏi ôn tập do giáo viên cung cấp
+- Nội dung từ tài liệu môn học
+- Văn bản người dùng nhập
+- Danh sách nhiệm vụ...`}
+                value={idea.contentData}
+                onChange={e => setIdea(prev => ({ ...prev, contentData: e.target.value }))}
+                className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-xs sm:text-sm text-gray-900 font-medium leading-relaxed"
+              />
 
-                    <div className="space-y-2">
-                      {idea.functions.map((fn, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded bg-blue-100 text-blue-900 text-[11px] font-extrabold flex items-center justify-center shrink-0">
-                            {idx + 1}
-                          </span>
-                          <input
-                            type="text"
-                            placeholder={`Chức năng ${idx + 1}: ${
-                              idx === 0 ? 'Hiển thị thẻ bài tập' : idx === 1 ? 'Kéo thả phân loại' : 'Phản hồi đúng/sai tức thì'
-                            }`}
-                            value={fn}
-                            onChange={e => handleFunctionChange(idx, e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-xs sm:text-sm text-gray-800 font-medium"
-                          />
-                          {idea.functions.length > 1 && (
-                            <button
-                              onClick={() => handleRemoveFunction(idx)}
-                              className="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                              title="Xóa chức năng"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      ))}
+              <div className="space-y-2 pt-1">
+                {[
+                  'Chỉ sử dụng nội dung do giáo viên cung cấp',
+                  'Cho phép AI xử lý nội dung người dùng nhập',
+                  'Cho phép AI tạo nội dung mới'
+                ].map(opt => {
+                  const isChecked = (idea.contentOptions || []).includes(opt);
+                  return (
+                    <label key={opt} className="flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-gray-800">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => handleToggleContentOption(opt)}
+                        className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 border-gray-300"
+                      />
+                      <span>{opt}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
 
-                      {idea.functions.length < 7 && (
+            {/* D. CHỨC NĂNG CHÍNH */}
+            <div className="space-y-2">
+              <div>
+                <label className="block text-xs font-extrabold text-gray-900 uppercase tracking-wide">
+                  D. CHỨC NĂNG CHÍNH <span className="text-red-500">*</span>
+                </label>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Nhập hoặc dán danh sách các chức năng chính của webapp (gõ tự do hoặc mỗi dòng một chức năng).
+                </p>
+              </div>
+
+              <textarea
+                rows={5}
+                placeholder={`Gõ hoặc dán danh sách các chức năng chính ở đây...
+Ví dụ:
+- Chọn chủ đề ôn tập
+- Làm câu hỏi trắc nghiệm
+- Phản hồi đúng/sai tức thì và hiển thị giải thích
+- Tổng kết kết quả và gợi ý nội dung cần ôn lại`}
+                value={Array.isArray(idea.functions) ? idea.functions.join('\n') : (idea.functions || '')}
+                onChange={e => {
+                  const lines = e.target.value.split('\n');
+                  setIdea(prev => ({ ...prev, functions: lines }));
+                }}
+                className="w-full px-3.5 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-xs sm:text-sm text-gray-900 font-medium leading-relaxed shadow-sm"
+              />
+            </div>
+
+            {/* E. LUỒNG SỬ DỤNG */}
+            <div className="space-y-3 bg-purple-50/50 border border-purple-100 rounded-2xl p-4.5">
+              <div>
+                <label className="block text-xs font-extrabold text-purple-950 uppercase tracking-wide">
+                  E. LUỒNG SỬ DỤNG
+                </label>
+                <p className="text-xs text-purple-800/80 mt-0.5">
+                  Người dùng sẽ sử dụng webapp như thế nào? (Step flow)
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                {(idea.userFlowSteps || ['Mở webapp', 'Chọn chủ đề', 'Làm câu hỏi']).map((stepText, idx) => (
+                  <div key={idx} className="flex items-center gap-1.5">
+                    <div className="bg-white border border-purple-200 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 shadow-sm">
+                      <span className="text-[10px] font-black text-purple-600">Bước {idx + 1}</span>
+                      <input
+                        type="text"
+                        value={stepText}
+                        onChange={e => handleUserStepChange(idx, e.target.value)}
+                        placeholder="Nhiệm vụ..."
+                        className="w-24 sm:w-28 bg-transparent outline-none text-xs font-bold text-gray-900"
+                      />
+                      {(idea.userFlowSteps || []).length > 1 && (
                         <button
-                          onClick={handleAddFunction}
-                          className="mt-1 px-3 py-1.5 rounded-xl border border-dashed border-blue-400 text-blue-800 hover:bg-blue-50 text-xs font-bold flex items-center gap-1 transition-all"
+                          onClick={() => handleRemoveUserStep(idx)}
+                          className="text-gray-400 hover:text-red-500 text-xs font-black"
                         >
-                          <Plus className="w-3.5 h-3.5 text-blue-600" />
-                          <span>Thêm chức năng tiếp theo</span>
+                          ×
                         </button>
                       )}
                     </div>
+                    {idx < (idea.userFlowSteps || []).length - 1 && (
+                      <ArrowRight className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                    )}
                   </div>
-
-                  {/* CÂU 4: LUỒNG SỬ DỤNG */}
-                  <div className="bg-white border border-blue-200/90 rounded-2xl p-4.5 space-y-3.5 shadow-sm">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-lg bg-blue-600 text-white text-xs font-extrabold flex items-center justify-center shrink-0">4</span>
-                        <h5 className="text-sm font-extrabold text-gray-900">Luồng sử dụng từ khi mở Webapp</h5>
-                      </div>
-                      <button
-                        onClick={() => handleAiSuggest(4)}
-                        disabled={loadingAiQuestion === 4}
-                        className="px-3 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-300 text-xs font-bold flex items-center gap-1 transition-all shrink-0 disabled:opacity-50"
-                      >
-                        <Wand2 className={`w-3.5 h-3.5 text-blue-600 ${loadingAiQuestion === 4 ? 'animate-spin' : ''}`} />
-                        <span>{loadingAiQuestion === 4 ? 'Đang gợi ý...' : '✨ AI gợi ý luồng'}</span>
-                      </button>
-                    </div>
-
-                    <p className="text-xs text-gray-500">Mô tả trình tự học sinh tương tác từ lúc bắt đầu tới khi hoàn thành.</p>
-
-                    <textarea
-                      rows={4}
-                      placeholder="Mở trang → Đọc hướng dẫn → Thao tác giải bài → Nhận kết quả đúng/sai ngay → Xem giải thích → Làm lại bài khác."
-                      value={idea.userFlow}
-                      onChange={e => setIdea(prev => ({ ...prev, userFlow: e.target.value }))}
-                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-xs sm:text-sm text-gray-800 font-medium leading-relaxed"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* ==================== MÔ-ĐUN 3 ==================== */}
-              <div className="bg-gradient-to-br from-emerald-50/60 via-emerald-50/20 to-white border border-emerald-200 rounded-2xl p-5 sm:p-6 space-y-5 shadow-sm">
-                <div className="flex items-center gap-2.5 border-b border-emerald-200/80 pb-3">
-                  <div className="p-2 bg-emerald-600 text-white rounded-xl shadow-sm">
-                    <FileText className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="text-[11px] font-extrabold text-emerald-800 uppercase tracking-wider block">MÔ-ĐUN III</span>
-                    <h4 className="text-base sm:text-lg font-extrabold text-gray-900">NỘI DUNG CHUYÊN MÔN & RÀNG BUỘC KỸ THUẬT</h4>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  {/* CÂU 5: NỘI DUNG BẮT BUỘC */}
-                  <div className="bg-white border border-emerald-200/90 rounded-2xl p-4.5 space-y-3 shadow-sm md:col-span-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-lg bg-emerald-600 text-white text-xs font-extrabold flex items-center justify-center shrink-0">5</span>
-                        <h5 className="text-sm font-extrabold text-gray-900">Nội dung bắt buộc <span className="text-red-500">*</span></h5>
-                      </div>
-                      <button
-                        onClick={() => handleAiSuggest(5)}
-                        disabled={loadingAiQuestion === 5}
-                        className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 text-[11px] font-bold flex items-center gap-1 transition-all shrink-0 disabled:opacity-50"
-                      >
-                        <Wand2 className={`w-3 h-3 text-emerald-600 ${loadingAiQuestion === 5 ? 'animate-spin' : ''}`} />
-                        <span>✨ AI gợi ý</span>
-                      </button>
-                    </div>
-
-                    <div className="p-2.5 bg-emerald-50/80 border border-emerald-200 rounded-xl text-[11px] text-emerald-950 font-medium flex items-start gap-2">
-                      <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                      <span><strong>Giáo viên làm chủ:</strong> Nội dung kiến thức do giáo viên quyết định.</span>
-                    </div>
-
-                    <textarea
-                      rows={5}
-                      placeholder="Các câu hỏi/khái niệm/dữ liệu bắt buộc xuất hiện trong Webapp..."
-                      value={idea.mandatoryContent}
-                      onChange={e => setIdea(prev => ({ ...prev, mandatoryContent: e.target.value }))}
-                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-xs sm:text-sm text-gray-800 font-medium leading-relaxed"
-                    />
-                  </div>
-
-                  {/* CÂU 6: GIAO DIỆN MONG MUỐN */}
-                  <div className="bg-white border border-emerald-200/90 rounded-2xl p-4.5 space-y-3 shadow-sm md:col-span-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-lg bg-emerald-600 text-white text-xs font-extrabold flex items-center justify-center shrink-0">6</span>
-                        <h5 className="text-sm font-extrabold text-gray-900">Phong cách Giao diện</h5>
-                      </div>
-                      <button
-                        onClick={() => handleAiSuggest(6)}
-                        disabled={loadingAiQuestion === 6}
-                        className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 text-[11px] font-bold flex items-center gap-1 transition-all shrink-0 disabled:opacity-50"
-                      >
-                        <Wand2 className={`w-3 h-3 text-emerald-600 ${loadingAiQuestion === 6 ? 'animate-spin' : ''}`} />
-                        <span>✨ AI gợi ý</span>
-                      </button>
-                    </div>
-
-                    <p className="text-xs text-gray-500">Chọn thuộc tính giao diện phù hợp với lứa tuổi học sinh.</p>
-
-                    <div className="flex flex-wrap gap-1.5">
-                      {[
-                        "Đơn giản",
-                        "Hiện đại",
-                        "Sinh động",
-                        "Phù hợp học sinh nhỏ tuổi",
-                        "Tối giản",
-                        "Công nghệ"
-                      ].map((style, idx) => {
-                        const isSelected = idea.uiStyle.includes(style);
-                        return (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => handleToggleUiStyle(style)}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all border flex items-center gap-1 ${
-                              isSelected
-                                ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                                : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border-gray-200'
-                            }`}
-                          >
-                            {isSelected && <Check className="w-3 h-3" />}
-                            <span>{style}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-gray-700 mb-1">Yêu cầu màu sắc/giao diện khác:</label>
-                      <input
-                        type="text"
-                        placeholder="Màu sắc tươi sáng, chữ to rõ..."
-                        value={idea.otherUiReqs}
-                        onChange={e => setIdea(prev => ({ ...prev, otherUiReqs: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-xs text-gray-800 font-medium"
-                      />
-                    </div>
-                  </div>
-
-                  {/* CÂU 7: ĐIỀU KIỆN / RÀNG BUỘC KỸ THUẬT */}
-                  <div className="bg-white border border-emerald-200/90 rounded-2xl p-4.5 space-y-3 shadow-sm md:col-span-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-lg bg-emerald-600 text-white text-xs font-extrabold flex items-center justify-center shrink-0">7</span>
-                        <h5 className="text-sm font-extrabold text-gray-900">Ràng buộc kỹ thuật</h5>
-                      </div>
-                      <button
-                        onClick={() => handleAiSuggest(7)}
-                        disabled={loadingAiQuestion === 7}
-                        className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 text-[11px] font-bold flex items-center gap-1 transition-all shrink-0 disabled:opacity-50"
-                      >
-                        <Wand2 className={`w-3 h-3 text-emerald-600 ${loadingAiQuestion === 7 ? 'animate-spin' : ''}`} />
-                        <span>✨ AI gợi ý</span>
-                      </button>
-                    </div>
-
-                    <p className="text-xs text-gray-500">Giúp Webapp chạy mượt mà, không giật lag trên điện thoại & máy tính.</p>
-
-                    <div className="space-y-1.5">
-                      {[
-                        "Hoạt động trong khoảng 5 phút",
-                        "Không yêu cầu đăng nhập",
-                        "Không thu thập dữ liệu cá nhân",
-                        "Sử dụng được trên điện thoại",
-                        "Không cần cơ sở dữ liệu",
-                        "Nội dung hoàn toàn bằng tiếng Việt"
-                      ].map((item, idx) => {
-                        const isChecked = idea.constraints.includes(item);
-                        return (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => handleToggleConstraint(item)}
-                            className={`p-2 rounded-xl text-xs font-medium text-left transition-all border w-full flex items-center justify-between ${
-                              isChecked
-                                ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-bold'
-                                : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-600'
-                            }`}
-                          >
-                            <span>{item}</span>
-                            {isChecked ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> : <div className="w-3.5 h-3.5 rounded-full border border-gray-300" />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* MODE B: STEPPER / WIZARD (1 to 7) */}
-          {formLayoutMode === 'stepper' && (
-            <div className="space-y-6 animate-fadeIn bg-gray-50/70 border border-gray-200 p-5 rounded-2xl">
-              {/* Question selector chips 1 to 7 */}
-              <div className="flex items-center justify-between border-b border-gray-200 pb-3">
-                <span className="text-xs font-extrabold text-amber-800 uppercase tracking-wider">
-                  CÂU HỎI {currentQuestion} / 7
-                </span>
-                <div className="flex items-center gap-1 overflow-x-auto">
-                  {[1, 2, 3, 4, 5, 6, 7].map(num => (
-                    <button
-                      key={num}
-                      onClick={() => setCurrentQuestion(num)}
-                      className={`w-8 h-8 rounded-lg text-xs font-extrabold transition-all border flex items-center justify-center ${
-                        currentQuestion === num
-                          ? 'bg-amber-500 text-white border-amber-500 shadow-sm ring-2 ring-amber-200'
-                          : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-100'
-                      }`}
-                    >
-                      {num}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Single question view based on currentQuestion */}
-              {currentQuestion === 1 && (
-                <div className="space-y-3">
-                  <h4 className="text-base font-extrabold text-gray-900">Câu 1: Vấn đề cần giải quyết</h4>
-                  <textarea
-                    rows={4}
-                    placeholder="Mô tả khó khăn hoặc nhu cầu..."
-                    value={idea.problem}
-                    onChange={e => setIdea(prev => ({ ...prev, problem: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none text-sm text-gray-800"
-                  />
-                </div>
-              )}
-
-              {currentQuestion === 2 && (
-                <div className="space-y-3">
-                  <h4 className="text-base font-extrabold text-gray-900">Câu 2: Đối tượng sử dụng</h4>
-                  <input
-                    type="text"
-                    placeholder="Ví dụ: Học sinh THCS Lớp 7"
-                    value={idea.targetAudience}
-                    onChange={e => setIdea(prev => ({ ...prev, targetAudience: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none text-sm text-gray-800"
-                  />
-                </div>
-              )}
-
-              {currentQuestion === 3 && (
-                <div className="space-y-3">
-                  <h4 className="text-base font-extrabold text-gray-900">Câu 3: Chức năng chính</h4>
-                  {idea.functions.map((fn, idx) => (
-                    <input
-                      key={idx}
-                      type="text"
-                      placeholder={`Chức năng ${idx + 1}`}
-                      value={fn}
-                      onChange={e => handleFunctionChange(idx, e.target.value)}
-                      className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-sm mb-2"
-                    />
-                  ))}
-                </div>
-              )}
-
-              {currentQuestion === 4 && (
-                <div className="space-y-3">
-                  <h4 className="text-base font-extrabold text-gray-900">Câu 4: Luồng sử dụng</h4>
-                  <textarea
-                    rows={4}
-                    value={idea.userFlow}
-                    onChange={e => setIdea(prev => ({ ...prev, userFlow: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm"
-                  />
-                </div>
-              )}
-
-              {currentQuestion === 5 && (
-                <div className="space-y-3">
-                  <h4 className="text-base font-extrabold text-gray-900">Câu 5: Nội dung bắt buộc</h4>
-                  <textarea
-                    rows={4}
-                    value={idea.mandatoryContent}
-                    onChange={e => setIdea(prev => ({ ...prev, mandatoryContent: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm"
-                  />
-                </div>
-              )}
-
-              {currentQuestion === 6 && (
-                <div className="space-y-3">
-                  <h4 className="text-base font-extrabold text-gray-900">Câu 6: Giao diện mong muốn</h4>
-                  <input
-                    type="text"
-                    value={idea.otherUiReqs}
-                    onChange={e => setIdea(prev => ({ ...prev, otherUiReqs: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm"
-                  />
-                </div>
-              )}
-
-              {currentQuestion === 7 && (
-                <div className="space-y-3">
-                  <h4 className="text-base font-extrabold text-gray-900">Câu 7: Điều kiện / Ràng buộc</h4>
-                  <p className="text-xs text-gray-600">Đã chọn {idea.constraints.length} điều kiện mặc định.</p>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                <button
-                  disabled={currentQuestion === 1}
-                  onClick={() => setCurrentQuestion(prev => Math.max(1, prev - 1))}
-                  className="px-4 py-2 rounded-xl border border-gray-300 text-xs font-bold flex items-center gap-1 disabled:opacity-40"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span>Câu trước</span>
-                </button>
-                {currentQuestion < 7 ? (
-                  <button
-                    onClick={() => setCurrentQuestion(prev => Math.min(7, prev + 1))}
-                    className="px-5 py-2 rounded-xl bg-amber-500 text-white text-xs font-bold flex items-center gap-1"
-                  >
-                    <span>Câu sau</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleGoToReview}
-                    className="px-5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold"
-                  >
-                    <span>Xem lại bản thiết kế</span>
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Bottom Primary Action Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-200">
-            <div className="flex items-center gap-2 text-xs text-gray-600">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Đã hoàn thành <strong>{filledCount}/7</strong> phần yêu cầu.</span>
-            </div>
-
-            <button
-              onClick={handleGoToReview}
-              className="px-7 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white text-sm sm:text-base font-extrabold flex items-center justify-center gap-2 shadow-lg transition-all w-full sm:w-auto"
-            >
-              <span>Xem lại bản thiết kế & Đóng gói Master Prompt</span>
-              <ArrowRight className="w-5 h-5 text-amber-200" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 2: REVIEW DESIGN SUMMARY */}
-      {activeStep === 2 && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 shadow-sm space-y-6 animate-fadeIn">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-200">
-            <div>
-              <span className="text-xs font-extrabold text-amber-600 uppercase tracking-wider">
-                XEM LẠI BẢN THIẾT KẾ WEBAPP
-              </span>
-              <h3 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight mt-0.5">
-                Tổng quan ý tưởng trước khi tạo Master Prompt
-              </h3>
-              <p className="text-xs sm:text-sm text-gray-500">Hãy kiểm tra các thông tin dưới đây để bảo đảm đúng mục đích bài học.</p>
-            </div>
-
-            <button
-              onClick={() => setActiveStep(1)}
-              className="px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all self-start sm:self-auto"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Chỉnh sửa các câu hỏi</span>
-            </button>
-          </div>
-
-          {/* 8 Review Grid Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
-            <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-4.5 space-y-1">
-              <span className="font-extrabold text-amber-900 uppercase text-[11px] tracking-wider block">1. VẤN ĐỀ CẦN GIẢI QUYẾT</span>
-              <p className="font-semibold text-gray-900 leading-relaxed">{idea.problem || 'Chưa nhập'}</p>
-            </div>
-
-            <div className="bg-blue-50/80 border border-blue-200 rounded-2xl p-4.5 space-y-1">
-              <span className="font-extrabold text-blue-900 uppercase text-[11px] tracking-wider block">2. ĐỐI TƯỢNG SỬ DỤNG</span>
-              <p className="font-semibold text-gray-900 leading-relaxed">{idea.targetAudience || 'Chưa nhập'}</p>
-            </div>
-
-            <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-4.5 space-y-1 md:col-span-2">
-              <span className="font-extrabold text-emerald-900 uppercase text-[11px] tracking-wider block">3. MỤC TIÊU WEBAPP</span>
-              <p className="font-semibold text-gray-800 leading-relaxed">
-                Giúp đối tượng <strong className="text-emerald-950">{idea.targetAudience}</strong> giải quyết triệt để vấn đề <strong className="text-emerald-950">"{idea.problem}"</strong> bằng trải nghiệm Web tương tác trực quan.
-              </p>
-            </div>
-
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4.5 space-y-1 md:col-span-2">
-              <span className="font-extrabold text-gray-700 uppercase text-[11px] tracking-wider block">4. CHỨC NĂNG CHÍNH ({idea.functions.filter(Boolean).length})</span>
-              <ul className="list-disc list-inside space-y-1 text-gray-800 font-medium pt-1">
-                {idea.functions.filter(Boolean).map((fn, i) => (
-                  <li key={i}>{fn}</li>
                 ))}
-              </ul>
+
+                {(idea.userFlowSteps || []).length < 8 && (
+                  <button
+                    onClick={handleAddUserStep}
+                    className="px-3 py-1.5 rounded-xl border border-dashed border-purple-400 text-purple-700 hover:bg-purple-100 text-xs font-bold flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Thêm bước</span>
+                  </button>
+                )}
+              </div>
             </div>
 
-            <div className="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-4.5 space-y-1">
-              <span className="font-extrabold text-indigo-900 uppercase text-[11px] tracking-wider block">5. LUỒNG SỬ DỤNG</span>
-              <p className="font-medium text-gray-800 leading-relaxed">{idea.userFlow || 'Mở trang → Nhận nhiệm vụ → Thao tác → Xem kết quả'}</p>
+            {/* F. ĐẦU RA */}
+            <div className="space-y-2">
+              <label className="block text-xs font-extrabold text-gray-900 uppercase tracking-wide">
+                F. ĐẦU RA
+              </label>
+              <p className="text-xs text-gray-500">Webapp cần trả về kết quả gì cho người dùng?</p>
+              <textarea
+                rows={3}
+                placeholder={`Ví dụ:
+- Kết quả đúng/sai
+- Giải thích
+- Tổng số câu đúng
+- Nội dung cần ôn lại`}
+                value={idea.expectedOutput}
+                onChange={e => setIdea(prev => ({ ...prev, expectedOutput: e.target.value }))}
+                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-xs sm:text-sm text-gray-900 font-medium leading-relaxed"
+              />
             </div>
 
-            <div className="bg-rose-50/70 border border-rose-200 rounded-2xl p-4.5 space-y-1">
-              <span className="font-extrabold text-rose-900 uppercase text-[11px] tracking-wider block">6. NỘI DUNG BẮT BUỘC (GIÁO VIÊN LÀM CHỦ)</span>
-              <p className="font-medium text-gray-800 leading-relaxed line-clamp-4">{idea.mandatoryContent || 'Chưa nhập'}</p>
-            </div>
+            {/* G. RÀNG BUỘC */}
+            <div className="space-y-3 bg-slate-50 border border-slate-200 rounded-2xl p-4.5">
+              <label className="block text-xs font-extrabold text-gray-900 uppercase tracking-wide">
+                G. RÀNG BUỘC
+              </label>
 
-            <div className="bg-purple-50/70 border border-purple-200 rounded-2xl p-4.5 space-y-1">
-              <span className="font-extrabold text-purple-900 uppercase text-[11px] tracking-wider block">7. YÊU CẦU GIAO DIỆN</span>
-              <p className="font-semibold text-purple-950">{idea.uiStyle.join(', ') || 'Đơn giản'}</p>
-              {idea.otherUiReqs && <p className="text-gray-600 text-xs mt-1">{idea.otherUiReqs}</p>}
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {DEFAULT_CONSTRAINTS.map(c => {
+                  const isChecked = idea.constraints.includes(c);
+                  return (
+                    <label key={c} className="flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-gray-800 bg-white p-2.5 border rounded-xl">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => handleToggleConstraint(c)}
+                        className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 border-gray-300"
+                      />
+                      <span>{c}</span>
+                    </label>
+                  );
+                })}
+              </div>
 
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4.5 space-y-1">
-              <span className="font-extrabold text-slate-700 uppercase text-[11px] tracking-wider block">8. RÀNG BUỘC KỸ THUẬT</span>
-              <p className="font-medium text-gray-700 leading-relaxed">{idea.constraints.join(' • ') || 'Mặc định'}</p>
+              <div className="pt-2">
+                <label className="block text-xs font-bold text-gray-700 mb-1">Ràng buộc khác:</label>
+                <input
+                  type="text"
+                  placeholder="Nhập thêm các ràng buộc riêng nếu có..."
+                  value={idea.otherConstraints}
+                  onChange={e => setIdea(prev => ({ ...prev, otherConstraints: e.target.value }))}
+                  className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-xs text-gray-900 font-medium"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Action to Generate Master Prompt */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-200">
+          {/* BACK AND NEXT BUTTONS */}
+          <div className="flex items-center justify-between pt-4 border-t border-gray-200">
             <button
-              onClick={() => setActiveStep(1)}
-              className="px-4 py-3 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all w-full sm:w-auto justify-center"
+              onClick={() => {
+                setActiveStep(1);
+                setValidationError(null);
+              }}
+              className="px-5 py-3 rounded-2xl border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold text-sm flex items-center gap-2 transition-all"
             >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Chỉnh sửa các câu hỏi</span>
+              <ChevronLeft className="w-5 h-5" />
+              <span>← Quay lại Bước 1</span>
             </button>
 
             <button
-              onClick={() => setActiveStep(3)}
-              className="px-7 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg transition-all w-full sm:w-auto"
+              onClick={handleGoToStep3}
+              className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold text-sm flex items-center gap-2 transition-all shadow-md"
             >
-              <Sparkles className="w-5 h-5 text-amber-200" />
-              <span>ĐÓNG GÓI MASTER PROMPT CỦA BẠN</span>
+              <span>Tiếp tục Kiểm tra Requirements</span>
+              <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         </div>
       )}
 
-      {/* STEP 3: MASTER PROMPT DISPLAY & GOOGLE AI STUDIO INSTRUCTIONS */}
+      {/* ========================================================================= */}
+      {/* BƯỚC 3 — KIỂM TRA REQUIREMENTS */}
+      {/* ========================================================================= */}
       {activeStep === 3 && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 shadow-sm space-y-6 animate-fadeIn">
-          {/* Header + Action Buttons */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-gray-200">
-            <div>
-              <span className="bg-emerald-600 text-white text-[11px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider">
-                Đã đóng gói thành công
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 shadow-sm space-y-7 animate-fadeIn">
+          <div>
+            <span className="text-xs font-extrabold text-purple-600 uppercase tracking-wider">
+              BƯỚC 3 — SOÁT LỖI YÊU CẦU
+            </span>
+            <h3 className="text-xl font-extrabold text-gray-900 tracking-tight mt-1">
+              BƯỚC 3 — Kiểm tra trước khi tạo Master Prompt
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">
+              Xác nhận lại toàn bộ bản thiết kế kỹ lưỡng trước khi đóng gói thành Master Prompt cho Google AI Studio.
+            </p>
+          </div>
+
+          {/* CHECKPOINT CHECKLIST */}
+          <div className="bg-slate-900 text-white border border-slate-800 rounded-2xl p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-black uppercase tracking-wider text-orange-400 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-orange-400" />
+                <span>CHECKPOINT BẢN THIẾT KẾ</span>
+              </h4>
+              <span className={`text-xs font-extrabold px-3 py-0.5 rounded-full ${
+                isAllCheckpointsPassed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+              }`}>
+                {checkpointItems.filter(i => i.pass).length} / {checkpointItems.length} đạt yêu cầu
               </span>
-              <h3 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight mt-1">
-                MASTER PROMPT WEBAPP SẴN SÀNG!
-              </h3>
-              <p className="text-xs sm:text-sm text-gray-500">Sao chép Master Prompt này và dán vào Google AI Studio Build mode.</p>
             </div>
 
-            <div className="flex items-center gap-2.5 flex-wrap shrink-0">
-              <button
-                onClick={handleSave}
-                className="px-4 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all shadow-sm"
-              >
-                {savedSuccess ? (
-                  <>
-                    <Check className="w-4 h-4 text-emerald-600" />
-                    <span className="text-emerald-700 font-extrabold">Đã lưu Kho Prompt!</span>
-                  </>
-                ) : (
-                  <>
-                    <BookmarkPlus className="w-4 h-4 text-amber-600" />
-                    <span>Lưu vào Kho Prompt</span>
-                  </>
-                )}
-              </button>
-
-              <button
-                onClick={handleCopy}
-                className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all shadow-lg ring-2 ring-amber-300 ${
-                  copied
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-amber-500 hover:bg-amber-600 text-white'
-                }`}
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4 text-white" />
-                    <span>ĐÃ SAO CHÉP MASTER PROMPT!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4 text-amber-100" />
-                    <span>SAO CHÉP MASTER PROMPT</span>
-                  </>
-                )}
-              </button>
-
-              <a
-                href="https://aistudio.google.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-5 py-2.5 rounded-xl bg-[#0052CC] hover:bg-[#0A66C2] text-white text-xs sm:text-sm font-extrabold flex items-center gap-2 transition-all shadow-md"
-              >
-                <span>MỞ GOOGLE AI STUDIO</span>
-                <ExternalLink className="w-4 h-4 text-amber-300" />
-              </a>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+              {checkpointItems.map((item, idx) => (
+                <div key={idx} className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-between ${
+                  item.pass ? 'bg-emerald-950/40 border-emerald-800 text-emerald-200' : 'bg-amber-950/40 border-amber-800 text-amber-200'
+                }`}>
+                  <span className="flex items-center gap-2">
+                    {item.pass ? <Check className="w-4 h-4 text-emerald-400 shrink-0" /> : <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />}
+                    <span>{item.label}</span>
+                  </span>
+                  {!item.pass && (
+                    <button
+                      onClick={() => setActiveStep(item.step)}
+                      className="text-[10px] font-bold text-amber-300 underline hover:text-white shrink-0 ml-2"
+                    >
+                      Bổ sung
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* View Mode Switcher */}
-          <div className="flex items-center justify-between bg-gray-100 p-2 rounded-xl text-xs sm:text-sm">
-            <span className="text-gray-600 font-semibold px-2 hidden sm:inline">Chế độ hiển thị:</span>
-            <div className="flex items-center gap-1.5 w-full sm:w-auto justify-end">
-              <button
-                onClick={() => setViewMode('summary')}
-                className={`px-4 py-2 rounded-lg font-bold flex items-center gap-1.5 transition-all text-xs sm:text-sm ${
-                  viewMode === 'summary'
-                    ? 'bg-white text-amber-900 shadow-sm font-extrabold'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <Eye className="w-4 h-4 text-amber-600" />
-                <span>Tóm tắt cấu trúc Prompt</span>
-              </button>
-
-              <button
-                onClick={() => setViewMode('raw')}
-                className={`px-4 py-2 rounded-lg font-bold flex items-center gap-1.5 transition-all text-xs sm:text-sm ${
-                  viewMode === 'raw'
-                    ? 'bg-white text-gray-900 shadow-sm font-extrabold'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <Code className="w-4 h-4 text-blue-600" />
-                <span>Xem văn bản Master Prompt đầy đủ</span>
-              </button>
-            </div>
-          </div>
-
-          {/* VIEW MODE 1: STRUCTURED SUMMARY CARDS */}
-          {viewMode === 'summary' && (
-            <div className="space-y-4">
-              <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 sm:p-6 space-y-4">
-                <h4 className="text-sm sm:text-base font-extrabold text-amber-950 uppercase tracking-wider flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-amber-600" />
-                  CẤU TRÚC MASTER PROMPT ĐÃ ĐƯỢC ĐÓNG GÓI CHUẨN KĨ THUẬT
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
-                  <div className="bg-white/95 p-4 rounded-xl border border-amber-100 font-medium">
-                    <strong className="text-amber-900 block mb-1">VAI TRÒ & BỐI CẢNH:</strong>
-                    Chuyên gia thiết kế ứng dụng Web giáo dục giúp giải quyết khó khăn: "{idea.problem}"
-                  </div>
-                  <div className="bg-white/95 p-4 rounded-xl border border-amber-100 font-medium">
-                    <strong className="text-amber-900 block mb-1">ĐỐI TƯỢNG SỬ DỤNG:</strong>
-                    {idea.targetAudience}
-                  </div>
-                  <div className="bg-white/95 p-4 rounded-xl border border-amber-100 font-medium">
-                    <strong className="text-amber-900 block mb-1">CHỨC NĂNG CHÍNH:</strong>
-                    {idea.functions.filter(Boolean).join(' • ')}
-                  </div>
-                  <div className="bg-white/95 p-4 rounded-xl border border-amber-100 font-medium">
-                    <strong className="text-amber-900 block mb-1">RÀNG BUỘC KĨ THUẬT:</strong>
-                    Không tự thêm backend/db, chạy mượt mà trên điện thoại & máy tính.
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* VIEW MODE 2: RAW TEXT CODE PREVIEW */}
-          {viewMode === 'raw' && (
-            <div className="space-y-3">
-              <div className="relative rounded-2xl bg-gray-900 text-gray-100 p-5 font-mono text-xs sm:text-sm overflow-auto max-h-[500px] border border-gray-800 shadow-inner leading-relaxed select-all">
-                <div className="absolute top-3 right-4 text-[10px] text-gray-400 bg-gray-800 px-2.5 py-1 rounded font-sans">
-                  Master Prompt cho Custom Webapp
-                </div>
-                <pre className="whitespace-pre-wrap break-words font-mono text-xs sm:text-sm text-gray-200">
-                  {masterPromptText}
-                </pre>
-              </div>
-            </div>
-          )}
-
-          {/* NEXT STEPS GUIDE: 8 STEPS OF VIBE CODING */}
-          <div className="bg-slate-900 text-white rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
-            <h4 className="text-sm sm:text-base font-extrabold text-amber-300 uppercase tracking-wider flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-amber-400" />
-              BƯỚC TIẾP THEO: 8 BƯỚC THỰC HIỆN TRÊN GOOGLE AI STUDIO
+          {/* REQUIREMENTS SUMMARY REPORT */}
+          <div className="border border-purple-200 rounded-2xl bg-purple-50/30 p-5 space-y-4">
+            <h4 className="text-xs font-black uppercase tracking-wider text-purple-950 border-b border-purple-200 pb-2">
+              BẢN TỔNG HỢP REQUIREMENTS
             </h4>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 text-xs sm:text-sm">
-              <div className="bg-slate-800/90 p-3.5 rounded-xl border border-slate-700">
-                <span className="text-amber-400 font-extrabold block mb-1">1. SAO CHÉP</span>
-                Bấm nút <strong className="text-amber-300">"Sao chép Master Prompt"</strong> phía trên.
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div>
+                <span className="font-extrabold text-gray-500 block">TÊN SẢN PHẨM</span>
+                <span className="font-bold text-gray-900">{idea.productName || 'Chưa đặt tên'}</span>
               </div>
-              <div className="bg-slate-800/90 p-3.5 rounded-xl border border-slate-700">
-                <span className="text-amber-400 font-extrabold block mb-1">2. MỞ AI STUDIO</span>
-                Bấm nút <strong className="text-blue-300">"Mở Google AI Studio"</strong> để làm việc.
-              </div>
-              <div className="bg-slate-800/90 p-3.5 rounded-xl border border-slate-700">
-                <span className="text-amber-400 font-extrabold block mb-1">3. CHỌN BUILD MODE</span>
-                Chọn chế độ <strong className="text-emerald-300">Build mode</strong> trong Google AI Studio.
-              </div>
-              <div className="bg-slate-800/90 p-3.5 rounded-xl border border-slate-700">
-                <span className="text-amber-400 font-extrabold block mb-1">4. DÁN PROMPT</span>
-                Dán Master Prompt vào khung chat chỉ dẫn của AI.
-              </div>
-              <div className="bg-slate-800/90 p-3.5 rounded-xl border border-slate-700">
-                <span className="text-amber-400 font-extrabold block mb-1">5. TẠO ỨNG DỤNG</span>
-                Bấm <strong className="text-amber-300">Run / Generate</strong> để AI khởi tạo webapp.
-              </div>
-              <div className="bg-slate-800/90 p-3.5 rounded-xl border border-slate-700">
-                <span className="text-amber-400 font-extrabold block mb-1">6. DÙNG THỬ</span>
-                Thao tác trực tiếp trên màn hình xem trước (Preview).
-              </div>
-              <div className="bg-slate-800/90 p-3.5 rounded-xl border border-slate-700">
-                <span className="text-amber-400 font-extrabold block mb-1">7. QUAN SÁT</span>
-                Kiểm tra giao diện và phản hồi khi học sinh làm bài.
-              </div>
-              <div className="bg-slate-800/90 p-3.5 rounded-xl border border-slate-700">
-                <span className="text-amber-400 font-extrabold block mb-1">8. TINH CHỈNH</span>
-                Chat thêm với AI: "Chỉnh chữ to hơn", "Thêm nút chơi lại"...
-              </div>
-            </div>
 
-            <div className="p-3.5 bg-slate-800 border border-slate-700 rounded-xl text-xs sm:text-sm text-amber-200 font-medium flex items-center gap-2.5">
-              <Info className="w-5 h-5 text-amber-400 shrink-0" />
-              <span>
-                <strong>Lưu ý:</strong> Phiên bản đầu tiên do AI tạo ra là mẫu dùng thử. Thầy cô hoàn toàn có thể yêu cầu AI chỉnh sửa lại cho ưng ý!
-              </span>
+              <div>
+                <span className="font-extrabold text-gray-500 block">NGƯỜI DÙNG</span>
+                <span className="font-bold text-gray-900">{idea.targetAudience || 'Chưa nhập'}</span>
+              </div>
+
+              <div className="sm:col-span-2">
+                <span className="font-extrabold text-gray-500 block">VẤN ĐỀ CẦN GIẢI QUYẾT</span>
+                <span className="font-medium text-gray-900">{idea.problem || 'Chưa nhập'}</span>
+              </div>
+
+              <div className="sm:col-span-2">
+                <span className="font-extrabold text-gray-500 block">MÔ TẢ NHU CẦU</span>
+                <span className="font-bold text-purple-900">{idea.demandSentence || 'Chưa nhập'}</span>
+              </div>
+
+              <div className="sm:col-span-2">
+                <span className="font-extrabold text-gray-500 block">MỤC TIÊU</span>
+                <span className="font-medium text-gray-900">{idea.objective || 'Chưa nhập'}</span>
+              </div>
+
+              <div className="sm:col-span-2">
+                <span className="font-extrabold text-gray-500 block">NỘI DUNG / DỮ LIỆU</span>
+                <p className="font-medium text-gray-900 whitespace-pre-line">
+                  {idea.contentData || 'Nội dung do giáo viên/người dùng cung cấp'}
+                </p>
+                {idea.contentOptions && idea.contentOptions.length > 0 && (
+                  <ul className="list-disc list-inside text-[11px] text-gray-600 mt-1">
+                    {idea.contentOptions.map(o => <li key={o}>{o}</li>)}
+                  </ul>
+                )}
+              </div>
+
+              <div className="sm:col-span-2">
+                <span className="font-extrabold text-gray-500 block">CHỨC NĂNG CHÍNH</span>
+                <ol className="list-decimal list-inside font-bold text-gray-900 space-y-0.5 mt-1">
+                  {idea.functions.filter(f => f.trim() !== '').map((fn, i) => (
+                    <li key={i}>{fn}</li>
+                  ))}
+                </ol>
+              </div>
+
+              <div className="sm:col-span-2">
+                <span className="font-extrabold text-gray-500 block">LUỒNG SỬ DỤNG</span>
+                <span className="font-bold text-gray-900">
+                  {idea.userFlowSteps && idea.userFlowSteps.filter(s => s.trim() !== '').length > 0
+                    ? idea.userFlowSteps.filter(s => s.trim() !== '').join(' → ')
+                    : idea.userFlow || 'Chưa thiết lập'}
+                </span>
+              </div>
+
+              <div className="sm:col-span-2">
+                <span className="font-extrabold text-gray-500 block">ĐẦU RA</span>
+                <span className="font-medium text-gray-900">{idea.expectedOutput || idea.desiredOutcome || 'Chưa nhập'}</span>
+              </div>
+
+              <div className="sm:col-span-2">
+                <span className="font-extrabold text-gray-500 block">RÀNG BUỘC</span>
+                <ul className="list-disc list-inside text-gray-800 space-y-0.5 mt-1">
+                  {idea.constraints.map(c => <li key={c}>{c}</li>)}
+                  {idea.otherConstraints && <li>{idea.otherConstraints}</li>}
+                </ul>
+              </div>
             </div>
           </div>
 
-          {/* Bottom Footer Actions */}
+          {/* ACTION BUTTONS */}
           <div className="flex items-center justify-between pt-4 border-t border-gray-200">
             <button
               onClick={() => setActiveStep(2)}
-              className="px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all"
+              className="px-5 py-3 rounded-2xl border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold text-sm flex items-center gap-2 transition-all"
             >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Quay lại bản thiết kế</span>
+              <ChevronLeft className="w-5 h-5" />
+              <span>← Chỉnh sửa Requirements</span>
             </button>
 
-            <a
-              href="https://aistudio.google.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all shadow-md"
+            <button
+              onClick={handleGenerateAndSave}
+              className="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm flex items-center gap-2 transition-all shadow-md"
             >
-              <span>Mở Google AI Studio ngay</span>
-              <ExternalLink className="w-4 h-4" />
-            </a>
+              <Sparkles className="w-5 h-5 text-amber-300" />
+              <span>Tạo Master Prompt →</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* BƯỚC 4 — TẠO MASTER PROMPT */}
+      {/* ========================================================================= */}
+      {activeStep === 4 && (
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 shadow-sm space-y-6 animate-fadeIn">
+          <div>
+            <span className="text-xs font-extrabold text-emerald-600 uppercase tracking-wider">
+              BƯỚC 4 — KHỞI TẠO HOÀN TẤT
+            </span>
+            <h3 className="text-xl font-extrabold text-gray-900 tracking-tight mt-1">
+              BƯỚC 4 — Master Prompt đã sẵn sàng cho Google AI Studio
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">
+              Sao chép đoạn Master Prompt đã chuẩn hóa này và dán vào thanh chat của <strong className="text-purple-700">Google AI Studio Build</strong>.
+            </p>
+          </div>
+
+          {autoSavedNotice && (
+            <div className="p-4 bg-purple-50 border border-purple-200 rounded-2xl text-xs sm:text-sm text-purple-900 font-bold flex items-center gap-2.5 animate-fadeIn shadow-sm">
+              <CheckCircle2 className="w-5 h-5 text-purple-600 shrink-0" />
+              <span>Đã tự động lưu Master Prompt này vào <strong>Kho Prompt đã tạo</strong> của bạn!</span>
+            </div>
+          )}
+
+          {showCopyNotice && (
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs sm:text-sm text-emerald-900 font-bold flex items-center gap-2.5 animate-fadeIn">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span>Đã sao chép Master Prompt. Bạn có thể sử dụng prompt này trong Google AI Studio Build.</span>
+            </div>
+          )}
+
+          {/* MASTER PROMPT TEXTAREA */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-extrabold text-gray-700 uppercase tracking-wide">
+                MASTER PROMPT ĐẦU RA
+              </label>
+              <span className="text-[11px] text-gray-500 font-medium">Chuẩn định dạng Vibe Coding</span>
+            </div>
+
+            <textarea
+              readOnly
+              rows={16}
+              value={masterPromptText}
+              className="w-full p-4 font-mono text-xs text-slate-800 bg-slate-50 border border-slate-300 rounded-2xl focus:ring-2 focus:ring-purple-500 outline-none leading-relaxed select-all"
+            />
+          </div>
+
+          {/* 3 ACTION BUTTONS */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+            <button
+              onClick={() => setActiveStep(2)}
+              className="w-full sm:w-auto px-5 py-3 rounded-2xl border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>← CHỈNH SỬA REQUIREMENTS</span>
+            </button>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => {
+                  setShowCopyNotice(false);
+                  setActiveStep(3);
+                }}
+                className="flex-1 sm:flex-none px-4 py-3 rounded-2xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-900 font-bold text-xs sm:text-sm transition-all"
+              >
+                TẠO LẠI MASTER PROMPT
+              </button>
+
+              <button
+                onClick={handleCopyPrompt}
+                className="flex-1 sm:flex-none px-6 py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md"
+              >
+                {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                <span>{copied ? 'ĐÃ SAO CHÉP' : 'SAO CHÉP MASTER PROMPT'}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
