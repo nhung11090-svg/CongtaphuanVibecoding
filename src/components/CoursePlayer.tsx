@@ -712,16 +712,16 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
                 {/* Certificate Recipient Section */}
                 <div className="py-4 border-y-2 border-amber-200/80 space-y-3">
                   <p className="text-xs sm:text-sm text-slate-600 font-medium">Trân trọng trao tặng thầy / cô:</p>
-                  <div className="max-w-lg mx-auto">
-                    <input
-                      type="text"
+                  <div className="max-w-2xl mx-auto px-2">
+                    <textarea
+                      rows={teacherName.length > 35 ? 2 : 1}
                       value={teacherName}
                       onChange={e => setTeacherName(e.target.value)}
-                      className="text-center font-black text-xl sm:text-2xl text-indigo-950 border-b-2 border-orange-500 focus:border-indigo-950 outline-none px-4 py-2 w-full bg-amber-50/70 rounded-2xl transition-all shadow-inner focus:ring-2 focus:ring-purple-200"
+                      className="text-center font-black text-lg sm:text-xl md:text-2xl text-indigo-950 border-b-2 border-orange-500 focus:border-indigo-950 outline-none px-4 py-2 w-full bg-amber-50/70 rounded-2xl transition-all shadow-inner focus:ring-2 focus:ring-purple-200 resize-none overflow-hidden leading-snug"
                       placeholder="Nhập Họ và tên đầy đủ của Thầy / Cô..."
                     />
                   </div>
-                  <p className="text-xs sm:text-sm text-slate-700 max-w-lg mx-auto leading-relaxed font-medium pt-1">
+                  <p className="text-xs sm:text-sm text-slate-700 max-w-xl mx-auto leading-relaxed font-medium pt-1">
                     Đã hoàn thành xuất sắc các mô-đun tập huấn, làm quen môi trường Build mode, cấu trúc Master Prompt và quy trình chuyển đổi bài giảng thành Mini Webapp tương tác.
                   </p>
                 </div>
@@ -741,17 +741,17 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
                     </div>
                   </div>
 
-                  <div className="text-center sm:text-right space-y-1">
+                  <div className="text-center space-y-1 sm:min-w-[220px]">
                     <p className="font-black text-indigo-950 text-xs sm:text-sm uppercase tracking-wider">
                       GIÁM ĐỐC ĐIỀU HÀNH
                     </p>
                     <p className="text-[10px] text-slate-500 italic">Trường TH, THCS & THPT FPT Bắc Giang</p>
 
-                    <div className="py-2.5 flex flex-col items-center sm:items-end justify-center space-y-1">
-                      <span className="text-xs font-bold text-purple-800 italic tracking-widest uppercase">
+                    <div className="py-2.5 flex flex-col items-center justify-center space-y-1 text-center">
+                      <span className="text-xs font-bold text-purple-800 italic tracking-widest uppercase text-center block">
                         (Đã ký)
                       </span>
-                      <p className="font-sans font-black text-slate-900 text-base sm:text-xl tracking-wide pt-1">
+                      <p className="font-sans font-black text-slate-900 text-base sm:text-xl tracking-wide pt-1 text-center">
                         Đinh Đức Hiền
                       </p>
                     </div>
